@@ -1,4 +1,4 @@
-package io.app._cents.backend.models;
+package io.app._cents.backend.users.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

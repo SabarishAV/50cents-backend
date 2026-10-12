@@ -28,7 +28,6 @@ public class SwaggerConfig {
                                 new Server().url("http://localhost:8080").description("local")
 //                                new Server().url("https://50cents.onrender.com").description("live")
                         ))
-                .tags(List.of(new Tag().name("Test API"), new Tag().name("Auth APIs")))
                 .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
                 .components(
                         new Components()

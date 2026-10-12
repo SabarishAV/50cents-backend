@@ -2,48 +2,58 @@ package io.app._cents.backend.configs.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
+
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
 
-    private String secretKey = "D8+HqzX9OEJTxU1nqM7uI9Oxp6ULoNm+Fe1G+8DbE+g=";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
+    @PostConstruct
+    void validateSecret() {
+        if (secretKey == null || secretKey.length() < 6) {
+            throw new IllegalStateException("JWT_SECRET must be at least 6 characters");
+        }
+    }
 
-    @SuppressWarnings("deprecation")
     public String generateToken(
-            String userId, String name, String username, String email, String avatar, BigInteger points) {
+            String userId, String name, String username, String email, String avatar) {
 
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", String.valueOf(userId));
-        claims.put("name", name);
-        claims.put("username", username);
-        claims.put("email", email);
-        claims.put("avatar", avatar);
-        claims.put("points", points);
+        Date now = new Date();
 
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
-                .signWith(SignatureAlgorithm.HS256, getKey())
+                .subject(username)
+                .claim("userId", userId)
+                .claim("name", name)
+                .claim("username", username)
+                .claim("email", email)
+                .claim("avatar", avatar)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + 24 * 60 * 60 * 1000))
+                .signWith(getKey())
                 .compact();
     }
 
     private SecretKey getKey() {
-        byte[] keyBites = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBites);
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256")
+                    .digest(secretKey.getBytes(StandardCharsets.UTF_8));
+            return Keys.hmacShaKeyFor(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public String extractUserName(String token) {

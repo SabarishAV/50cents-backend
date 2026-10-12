@@ -20,11 +20,14 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  output:
+    ansi:
+      enabled: ALWAYS
+
 jwt:
-  secret: "super-secret"
+  secret: ${JWT_SECRET}
 
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html
-    ui-path: /api-docs
+    path: /api-docs
     persist-authorization: true
