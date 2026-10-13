@@ -1,13 +1,13 @@
 package io.app._cents.backend.users.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import io.app._cents.backend.users.types.UserRole;
+import jakarta.persistence.*;
+
+import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -37,14 +37,13 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String avatar;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserRole role;
+
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    private Instant createdAt;
 
     @PrePersist
     public void generateId() {
@@ -52,7 +51,7 @@ public class User {
             id = UUID.randomUUID().toString();
         }
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = Instant.now();
         }
     }
 }

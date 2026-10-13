@@ -21,13 +21,13 @@ public class AuthController {
 
     @Autowired AuthService authService;
 
-    @PostMapping(value = "/register/")
+    @PostMapping(value = "/register")
     @Operation(summary = "Register User")
     public ResponseEntity<RegisterUserResponse> registerUser(@Valid @RequestBody RegisterUserRequest user) {
         return authService.registerUser(user);
     }
 
-    @PostMapping(value = "/login/")
+    @PostMapping(value = "/login")
     @Operation(summary = "User Login")
     public ResponseEntity<LoginUserResponse> registerUser(@Valid @RequestBody LoginUserRequest user) {
         return authService.login(user);

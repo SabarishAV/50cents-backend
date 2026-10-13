@@ -1,6 +1,7 @@
 package io.app._cents.backend.common.exception;
 
 import io.app._cents.backend.common.exception.types.ErrorResponse;
+import io.jsonwebtoken.JwtException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,7 +22,6 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
@@ -52,7 +54,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Object> handleDenied(AccessDeniedException ex, WebRequest request) {
+    public ResponseEntity<Object> handleDenied(AccessDeniedException     ex, WebRequest request) {
         return build(HttpStatus.FORBIDDEN, "FORBIDDEN", "Access denied", null, request);
     }
 
@@ -60,6 +62,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleUnknown(Exception ex, WebRequest request) {
         log.error("Unhandled exception", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Something went wrong", null, request);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Object> handleAuth(AuthenticationException ex, WebRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid credentials", null, request);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<Object> handleJwt(JwtException ex, WebRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "Invalid or expired token", null, request);
     }
 
     @Override

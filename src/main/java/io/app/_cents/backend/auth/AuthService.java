@@ -6,7 +6,6 @@ import io.app._cents.backend.auth.dtos.registration.RegisterUserRequest;
 import io.app._cents.backend.auth.dtos.registration.RegisterUserResponse;
 import io.app._cents.backend.auth.exceptions.InvalidCredentialsException;
 import io.app._cents.backend.auth.exceptions.UserAlreadyExistsException;
-import io.app._cents.backend.auth.exceptions.UserNotFoundException;
 import io.app._cents.backend.configs.jwt.JwtService;
 import io.app._cents.backend.users.UsersService;
 import io.app._cents.backend.users.dtos.create.CreateUseRequest;
@@ -81,7 +80,8 @@ public class AuthService {
                             user.getName(),
                             user.getUsername(),
                             user.getEmail(),
-                            user.getAvatar()
+                            user.getAvatar(),
+                            user.getRole()
                     );
             if (token == null || token.trim().isEmpty()) {
                 throw new IllegalStateException("Token not generated");

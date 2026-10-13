@@ -1,5 +1,6 @@
 package io.app._cents.backend.configs.jwt;
 
+import io.app._cents.backend.users.types.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -29,7 +30,8 @@ public class JwtService {
     }
 
     public String generateToken(
-            String userId, String name, String username, String email, String avatar) {
+            String userId, String name, String username, String email, String avatar, UserRole role
+    ) {
 
         Date now = new Date();
 
@@ -40,6 +42,7 @@ public class JwtService {
                 .claim("username", username)
                 .claim("email", email)
                 .claim("avatar", avatar)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + 24 * 60 * 60 * 1000))
                 .signWith(getKey())
