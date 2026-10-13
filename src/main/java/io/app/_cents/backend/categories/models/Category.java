@@ -18,8 +18,11 @@ public class Category {
     @Column(updatable = false, nullable = false)
     private String id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false, unique = true)
+    private String code;
 
     @Column(nullable = true)
     private String image;
@@ -30,6 +33,4 @@ public class Category {
             id = UUID.randomUUID().toString();
         }
     }
-
-    // getters and setters
 }

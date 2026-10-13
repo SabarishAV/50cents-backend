@@ -50,3 +50,17 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+tasks.register<JavaExec>("seed") {
+    group = "application"
+    description = "Seeds the database without starting the app"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.app._cents.backend.seeders.SeederApplication")
+}
+
+tasks.register<JavaExec>("seedDown") {
+    group = "application"
+    description = "Deletes everything in the database"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.app._cents.backend.seeders.SeederDownApplication")
+}
