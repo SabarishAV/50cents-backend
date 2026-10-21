@@ -15,20 +15,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/auth/")
+@RequestMapping("/auth")
 @Tag(name = "Auth APIs", description = "Authentication APIs")
 public class AuthController {
 
     @Autowired AuthService authService;
 
     @PostMapping(value = "/register")
-    @Operation(summary = "Register User")
+    @Operation(summary = "Register User", description = "User registration")
     public ResponseEntity<RegisterUserResponse> registerUser(@Valid @RequestBody RegisterUserRequest user) {
         return authService.registerUser(user);
     }
 
     @PostMapping(value = "/login")
-    @Operation(summary = "User Login")
+    @Operation(summary = "User Login", description = "User login with username or email")
     public ResponseEntity<LoginUserResponse> registerUser(@Valid @RequestBody LoginUserRequest user) {
         return authService.login(user);
     }

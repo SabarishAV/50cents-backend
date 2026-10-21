@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -66,12 +67,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuth(AuthenticationException ex, WebRequest request) {
-        return build(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid credentials", null, request);
+        return build(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", "Authentication required", null, request);
     }
 
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<Object> handleJwt(JwtException ex, WebRequest request) {
         return build(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "Invalid or expired token", null, request);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Object> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid credentials", null, request);
     }
 
     @Override

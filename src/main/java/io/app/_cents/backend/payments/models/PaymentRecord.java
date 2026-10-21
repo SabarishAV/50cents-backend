@@ -4,6 +4,7 @@ import io.app._cents.backend.categories.models.Category;
 import io.app._cents.backend.users.models.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,12 +15,13 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Entity
-@Table(name = "payments", indexes = {
-        @Index(name = "idx_payments_user_id_paid_at", columnList = "user_id, paid_at"),
-        @Index(name = "idx_payments_category_id", columnList = "category_id")
+@Table(name = "payment_records", indexes = {
+        @Index(name = "idx_payment_records_user_id_paid_at", columnList = "user_id, paid_at"),
+        @Index(name = "idx_payment_records_category_id", columnList = "category_id")
 })
-public class Payment {
+public class PaymentRecord {
 
     @Id
     @Column(updatable = false, nullable = false)

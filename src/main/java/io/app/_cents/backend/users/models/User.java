@@ -39,7 +39,7 @@ public class User {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private UserRole role;
 
     @Column(name = "created_at", nullable = false)
