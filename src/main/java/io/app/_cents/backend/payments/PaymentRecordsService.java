@@ -2,18 +2,22 @@ package io.app._cents.backend.payments;
 
 import io.app._cents.backend.categories.CategoriesService;
 import io.app._cents.backend.categories.models.Category;
+import io.app._cents.backend.common.exception.NotFoundException;
 import io.app._cents.backend.common.utils.CurrentUser;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordResponse;
+import io.app._cents.backend.payments.dtos.delete.DeletePaymentRecordResponse;
 import io.app._cents.backend.payments.models.PaymentRecord;
 import io.app._cents.backend.users.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PaymentRecordsService {
@@ -63,5 +67,20 @@ public class PaymentRecordsService {
                 "Payment created successfully"
         ), HttpStatus.CREATED);
 
+    }
+
+    @Transactional
+    public ResponseEntity<DeletePaymentRecordResponse> deletePaymentRecord(String id){
+        PaymentRecord record = paymentRecordsRepository
+                .findByIdAndUserId(id, CurrentUser.id())
+                .orElseThrow(() -> new NotFoundException("Payment Record"));
+        paymentRecordsRepository.deleteById(id);
+        return new ResponseEntity<>(
+                new DeletePaymentRecordResponse(
+                        true,
+                        "Payment record deleted successfully"
+                ),
+                HttpStatus.OK
+        );
     }
 }
