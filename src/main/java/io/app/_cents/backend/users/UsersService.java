@@ -34,4 +34,8 @@ public class UsersService {
         return usersRepository.save(user);
     }
 
+    public User getReferenceById(String userId){
+        return usersRepository.getReferenceById(userId);
+    }
+
 }

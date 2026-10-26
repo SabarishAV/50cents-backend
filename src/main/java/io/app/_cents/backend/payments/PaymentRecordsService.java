@@ -6,6 +6,7 @@ import io.app._cents.backend.common.utils.CurrentUser;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordResponse;
 import io.app._cents.backend.payments.models.PaymentRecord;
+import io.app._cents.backend.users.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +21,10 @@ public class PaymentRecordsService {
     @Autowired PaymentRecordsRepository paymentRecordsRepository;
 
     @Autowired CategoriesService categoriesService;
+    @Autowired UsersService usersService;
 
     public ResponseEntity<CreatePaymentRecordResponse> createPaymentRecord(
             CreatePaymentRecordRequest payment) {
-
-        System.out.println(CurrentUser.id());
 
         List<Category> categories = categoriesService.listAll();
 
@@ -34,8 +34,10 @@ public class PaymentRecordsService {
                 .note(payment.getNote())
                 .paymentMedium(payment.getPaymentMedium())
                 .paidAt(Instant.now())
+                .user(usersService.getReferenceById(CurrentUser.id()))
                 .build();
 
+        // TODO: fix auto category selection
         if(!payment.getCategory().isEmpty()){
             for(Category category: categories){
                 if(category.getName().toLowerCase().contains(payment.getCategory().toLowerCase())){
@@ -44,7 +46,6 @@ public class PaymentRecordsService {
                 }
             }
         }
-
 
         // Setting category to "OTHER" if null
         if(record.getCategory() == null){
