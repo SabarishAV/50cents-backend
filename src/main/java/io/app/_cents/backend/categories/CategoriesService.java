@@ -15,4 +15,8 @@ public class CategoriesService {
         return categoriesRepository.findAll();
     }
 
+    public Category findById(String id){
+        return categoriesRepository.findById(id).orElse(null);
+    }
+
 }

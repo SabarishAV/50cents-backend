@@ -1,8 +1,8 @@
 package io.app._cents.backend.payments;
 
+import io.app._cents.backend.common.dtos.Response;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
-import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordResponse;
-import io.app._cents.backend.payments.dtos.delete.DeletePaymentRecordResponse;
+import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,18 +20,29 @@ public class PaymentRecordsController {
 
     @PostMapping()
     @Operation(summary = "Create record", description = "Create payment record")
-    public ResponseEntity<CreatePaymentRecordResponse> createPaymentRecord(
-            @Valid @RequestBody CreatePaymentRecordRequest payment) {
+    public ResponseEntity<Response> createPaymentRecord(
+            @Valid @RequestBody CreatePaymentRecordRequest payment
+    ) {
         return paymentRecordsService.createPaymentRecord(payment);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete record", description = "Delete payment record")
-    public ResponseEntity<DeletePaymentRecordResponse> deletePaymentRecord(
+    public ResponseEntity<Response> deletePaymentRecord(
             @Parameter(description = "Payment record ID", required = true)
             @PathVariable String id
             ) {
         return paymentRecordsService.deletePaymentRecord(id);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update record", description = "Update payment record")
+    public ResponseEntity<Response> updatePaymentRecord(
+            @Parameter(description = "Payment record ID", required = true)
+            @PathVariable String id,
+            @Valid @RequestBody UpdatePaymentRecordRequest body
+    ) {
+        return paymentRecordsService.updatePaymentRecord(id, body);
     }
 
 }

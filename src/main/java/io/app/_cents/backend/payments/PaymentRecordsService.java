@@ -2,11 +2,11 @@ package io.app._cents.backend.payments;
 
 import io.app._cents.backend.categories.CategoriesService;
 import io.app._cents.backend.categories.models.Category;
+import io.app._cents.backend.common.dtos.Response;
 import io.app._cents.backend.common.exception.NotFoundException;
 import io.app._cents.backend.common.utils.CurrentUser;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
-import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordResponse;
-import io.app._cents.backend.payments.dtos.delete.DeletePaymentRecordResponse;
+import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.app._cents.backend.payments.models.PaymentRecord;
 import io.app._cents.backend.users.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PaymentRecordsService {
@@ -27,7 +26,7 @@ public class PaymentRecordsService {
     @Autowired CategoriesService categoriesService;
     @Autowired UsersService usersService;
 
-    public ResponseEntity<CreatePaymentRecordResponse> createPaymentRecord(
+    public ResponseEntity<Response> createPaymentRecord(
             CreatePaymentRecordRequest payment) {
 
         List<Category> categories = categoriesService.listAll();
@@ -62,7 +61,7 @@ public class PaymentRecordsService {
         }
         paymentRecordsRepository.save(record);
 
-        return new ResponseEntity<>(new CreatePaymentRecordResponse(
+        return new ResponseEntity<>(new Response(
                 true,
                 "Payment created successfully"
         ), HttpStatus.CREATED);
@@ -70,15 +69,50 @@ public class PaymentRecordsService {
     }
 
     @Transactional
-    public ResponseEntity<DeletePaymentRecordResponse> deletePaymentRecord(String id){
+    public ResponseEntity<Response> deletePaymentRecord(String id){
         PaymentRecord record = paymentRecordsRepository
                 .findByIdAndUserId(id, CurrentUser.id())
                 .orElseThrow(() -> new NotFoundException("Payment Record"));
-        paymentRecordsRepository.deleteById(id);
+        paymentRecordsRepository.deleteById(record.getId());
         return new ResponseEntity<>(
-                new DeletePaymentRecordResponse(
+                new Response(
                         true,
                         "Payment record deleted successfully"
+                ),
+                HttpStatus.OK
+        );
+    }
+
+    @Transactional
+    public ResponseEntity<Response> updatePaymentRecord( String paymentId, UpdatePaymentRecordRequest request) {
+        PaymentRecord payment = paymentRecordsRepository.findByIdAndUserId(paymentId, CurrentUser.id())
+                .orElseThrow(() -> new NotFoundException("Payment record not found"));
+
+        if (request.getAmount() != null) {
+            payment.setAmount(request.getAmount());
+        }
+        if (request.getRecipientName() != null) {
+            payment.setRecipientName(request.getRecipientName().trim());
+        }
+        if (request.getNote() != null) {
+            payment.setNote(request.getNote().trim());
+        }
+        if (request.getPaymentMedium() != null) {
+            payment.setPaymentMedium(request.getPaymentMedium().trim());
+        }
+        if (request.getCategoryId() != null) {
+            Category category = categoriesService.findById(request.getCategoryId().trim());
+            if (category == null) {
+                throw new NotFoundException("Category not found");
+            }
+            payment.setCategory(category);
+        }
+        paymentRecordsRepository.save(payment);
+
+        return new ResponseEntity<>(
+                new Response(
+                        true,
+                        "Payment record updated successfully"
                 ),
                 HttpStatus.OK
         );

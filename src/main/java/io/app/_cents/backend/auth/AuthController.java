@@ -3,7 +3,7 @@ package io.app._cents.backend.auth;
 import io.app._cents.backend.auth.dtos.login.LoginUserRequest;
 import io.app._cents.backend.auth.dtos.login.LoginUserResponse;
 import io.app._cents.backend.auth.dtos.registration.RegisterUserRequest;
-import io.app._cents.backend.auth.dtos.registration.RegisterUserResponse;
+import io.app._cents.backend.common.dtos.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ public class AuthController {
 
     @PostMapping(value = "/register")
     @Operation(summary = "Register User", description = "User registration")
-    public ResponseEntity<RegisterUserResponse> registerUser(@Valid @RequestBody RegisterUserRequest user) {
+    public ResponseEntity<Response> registerUser(@Valid @RequestBody RegisterUserRequest user) {
         return authService.registerUser(user);
     }
 

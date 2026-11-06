@@ -3,9 +3,9 @@ package io.app._cents.backend.auth;
 import io.app._cents.backend.auth.dtos.login.LoginUserRequest;
 import io.app._cents.backend.auth.dtos.login.LoginUserResponse;
 import io.app._cents.backend.auth.dtos.registration.RegisterUserRequest;
-import io.app._cents.backend.auth.dtos.registration.RegisterUserResponse;
 import io.app._cents.backend.auth.exceptions.InvalidCredentialsException;
 import io.app._cents.backend.auth.exceptions.UserAlreadyExistsException;
+import io.app._cents.backend.common.dtos.Response;
 import io.app._cents.backend.configs.jwt.JwtService;
 import io.app._cents.backend.users.UsersService;
 import io.app._cents.backend.users.dtos.create.CreateUseRequest;
@@ -32,7 +32,7 @@ public class AuthService {
     @Autowired private JwtService jwtService;
     @Autowired private UsersService usersService;
 
-    public ResponseEntity<RegisterUserResponse> registerUser(RegisterUserRequest registerUser) {
+    public ResponseEntity<Response> registerUser(RegisterUserRequest registerUser) {
             boolean doesUserExists = usersService.checkUserExists(
                     registerUser.getUsername(),
                     registerUser.getEmail()
@@ -51,7 +51,7 @@ public class AuthService {
                     )
             );
 
-            return new ResponseEntity<>(new RegisterUserResponse(
+            return new ResponseEntity<>(new Response(
                     true,
                     "User created successfully"
             ), HttpStatus.CREATED);
