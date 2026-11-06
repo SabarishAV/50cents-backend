@@ -1,4 +1,4 @@
-package io.app._cents.backend.auth;
+package io.app._cents.backend.auth.services;
 
 import io.app._cents.backend.auth.dtos.login.LoginUserRequest;
 import io.app._cents.backend.auth.dtos.login.LoginUserResponse;
@@ -89,5 +89,7 @@ public class AuthService {
                     token
             ), HttpStatus.OK);
     }
+
+
 
 }

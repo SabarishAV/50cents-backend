@@ -25,6 +25,9 @@ dependencies {
     // Security framework
     implementation("org.springframework.boot:spring-boot-starter-security")
 
+    // OAuth
+    implementation("com.google.api-client:google-api-client:2.7.0")
+
     // JJWT libraries for token generation and parsing
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")

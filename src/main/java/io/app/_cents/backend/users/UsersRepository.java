@@ -13,6 +13,12 @@ public interface UsersRepository extends JpaRepository<User, String> {
 
     User findByUsername(String username);
 
+    Optional<User> findByGoogleId(String googleId);
+
+    Optional<User> findByEmail(String email);
+
+    boolean existsByUsername(String username);
+
     Optional<User> findByUsernameOrEmail(String username, String email);
 
     @Query(

@@ -1,5 +1,6 @@
 package io.app._cents.backend.common.exceptions;
 
+import io.app._cents.backend.auth.exceptions.InvalidGoogleTokenException;
 import io.app._cents.backend.common.exceptions.types.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -62,6 +63,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "You do not have permission to perform this action", null, request);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "Invalid request", null, request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnknown(Exception ex, WebRequest request) {
         log.error("Unhandled exception", ex);
@@ -86,6 +93,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<Object> handleUserGone(UsernameNotFoundException ex, WebRequest request) {
         return build(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "User no longer exists", null, request);
+    }
+
+    @ExceptionHandler(InvalidGoogleTokenException.class)
+    public ResponseEntity<Object> handleInvalidGoogleToken(InvalidGoogleTokenException ex, WebRequest request) {
+        log.warn("Google token rejected: {}", ex.getMessage());
+        return build(HttpStatus.UNAUTHORIZED, "INVALID_GOOGLE_TOKEN",
+                "Google sign-in failed. Please try again.", null, request);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

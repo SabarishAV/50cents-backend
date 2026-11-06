@@ -22,6 +22,12 @@ public class UsersService {
         return usersRepository.doesUserExists(username,email);
     }
 
+    public User save(User user){ return usersRepository.save(user); }
+
+    public boolean existsByUsername(String username){
+        return usersRepository.existsByUsername(username);
+    }
+
     public User createUser(CreateUseRequest reqUser){
         User user = User.builder()
                 .name(reqUser.getName())
@@ -36,6 +42,11 @@ public class UsersService {
 
     public User getReferenceById(String userId){
         return usersRepository.getReferenceById(userId);
+    }
+
+    public Optional<User> findUserByGoogleIdOrEmail(String googleId, String email) {
+        return usersRepository.findByGoogleId(googleId)
+                .or(() -> usersRepository.findByEmail(email));
     }
 
 }
