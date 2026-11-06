@@ -1,4 +1,4 @@
-package io.app._cents.backend.common.exception;
+package io.app._cents.backend.common.exceptions;
 
 import org.springframework.http.HttpStatus;
 

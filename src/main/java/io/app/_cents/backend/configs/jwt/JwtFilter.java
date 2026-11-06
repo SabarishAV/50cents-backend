@@ -1,5 +1,6 @@
 package io.app._cents.backend.configs.jwt;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,21 +32,22 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtService.extractUserName(token);
+            username = jwtService.extractUserName(token); // throws ExpiredJwtException / JwtException
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
             UserDetails userDetails =
                     context.getBean(MyUserDetailsService.class).loadUserByUsername(username);
 
-            if (jwtService.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(jwtService.extractUserId(token));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (!jwtService.validateToken(token, userDetails)) {
+                throw new JwtException("Token is invalid");
             }
+
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+            authToken.setDetails(jwtService.extractUserId(token));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);

@@ -1,6 +1,7 @@
-package io.app._cents.backend.common.exception;
+package io.app._cents.backend.common.exceptions;
 
-import io.app._cents.backend.common.exception.types.ErrorResponse;
+import io.app._cents.backend.common.exceptions.types.ErrorResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -55,8 +57,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Object> handleDenied(AccessDeniedException     ex, WebRequest request) {
-        return build(HttpStatus.FORBIDDEN, "FORBIDDEN", "Access denied", null, request);
+    public ResponseEntity<Object> handleDenied(AccessDeniedException ex, WebRequest request) {
+        return build(HttpStatus.FORBIDDEN, "INSUFFICIENT_ROLE",
+                "You do not have permission to perform this action", null, request);
     }
 
     @ExceptionHandler(Exception.class)
@@ -67,12 +70,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Object> handleAuth(AuthenticationException ex, WebRequest request) {
-        return build(HttpStatus.UNAUTHORIZED, "UNAUTHENTICATED", "Authentication required", null, request);
+        return build(HttpStatus.UNAUTHORIZED, "MISSING_TOKEN", "Authentication token is missing", null, request);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<Object> handleExpiredJwt(ExpiredJwtException ex, WebRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, "TOKEN_EXPIRED", "Token has expired", null, request);
     }
 
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<Object> handleJwt(JwtException ex, WebRequest request) {
-        return build(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "Invalid or expired token", null, request);
+        return build(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "Token is invalid", null, request);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<Object> handleUserGone(UsernameNotFoundException ex, WebRequest request) {
+        return build(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "User no longer exists", null, request);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

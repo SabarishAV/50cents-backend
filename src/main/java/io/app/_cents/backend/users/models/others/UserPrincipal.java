@@ -2,6 +2,7 @@ package io.app._cents.backend.users.models.others;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import io.app._cents.backend.users.models.User;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,7 +19,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
     @Override

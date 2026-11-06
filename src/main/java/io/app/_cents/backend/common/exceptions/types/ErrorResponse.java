@@ -1,4 +1,4 @@
-package io.app._cents.backend.common.exception.types;
+package io.app._cents.backend.common.exceptions.types;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

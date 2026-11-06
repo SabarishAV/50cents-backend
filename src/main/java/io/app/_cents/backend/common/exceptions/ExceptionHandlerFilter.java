@@ -1,4 +1,4 @@
-package io.app._cents.backend.common.exception;
+package io.app._cents.backend.common.exceptions;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

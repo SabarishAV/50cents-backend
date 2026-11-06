@@ -1,5 +1,6 @@
-package io.app._cents.backend.categories;
+package io.app._cents.backend.categories.services;
 
+import io.app._cents.backend.categories.CategoriesRepository;
 import io.app._cents.backend.categories.models.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

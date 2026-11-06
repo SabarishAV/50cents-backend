@@ -1,9 +1,9 @@
 package io.app._cents.backend.payments;
 
-import io.app._cents.backend.categories.CategoriesService;
+import io.app._cents.backend.categories.services.CategoriesService;
 import io.app._cents.backend.categories.models.Category;
 import io.app._cents.backend.common.dtos.Response;
-import io.app._cents.backend.common.exception.NotFoundException;
+import io.app._cents.backend.common.exceptions.NotFoundException;
 import io.app._cents.backend.common.utils.CurrentUser;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
