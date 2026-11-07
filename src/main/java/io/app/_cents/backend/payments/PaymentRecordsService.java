@@ -1,11 +1,15 @@
 package io.app._cents.backend.payments;
 
+import static io.app._cents.backend.payments.mappers.PaymentRecordMapper.toPaymentRecord;
+
 import io.app._cents.backend.categories.models.Category;
 import io.app._cents.backend.categories.services.CategoriesService;
 import io.app._cents.backend.common.dtos.Response;
 import io.app._cents.backend.common.exceptions.NotFoundException;
+import io.app._cents.backend.common.pagination.PageResponse;
 import io.app._cents.backend.common.utils.CurrentUser;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
+import io.app._cents.backend.payments.dtos.list.ListPaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.app._cents.backend.payments.models.PaymentRecord;
 import io.app._cents.backend.users.UsersService;
@@ -127,5 +131,31 @@ public class PaymentRecordsService {
             .avatar(oldUser.getAvatar())
             .build());
     return new ResponseEntity<>(paymentRecord, HttpStatus.OK);
+  }
+
+  public ResponseEntity<PageResponse<PaymentRecord>> listPaymentRecords(
+      ListPaymentRecordRequest req) {
+
+    List<PaymentRecord> rows =
+        paymentRecordsRepository
+            .getPaymentsOfUser(
+                CurrentUser.id(),
+                req.getYear(),
+                req.getMonth(),
+                req.getOnlyThisMonth(),
+                req.getPageNumber() - 1,
+                req.getPageSize())
+            .stream()
+            .map(row -> toPaymentRecord(row))
+            .toList();
+
+    long total =
+        paymentRecordsRepository.countPaymentsOfUser(
+            CurrentUser.id(), req.getYear(), req.getMonth(), req.getOnlyThisMonth());
+
+    PageResponse<PaymentRecord> res =
+        PageResponse.toPaginated(rows, req.getPageNumber(), req.getPageSize(), total);
+
+    return new ResponseEntity<>(res, HttpStatus.OK);
   }
 }

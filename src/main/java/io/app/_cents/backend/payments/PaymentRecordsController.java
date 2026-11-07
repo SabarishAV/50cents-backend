@@ -1,13 +1,16 @@
 package io.app._cents.backend.payments;
 
 import io.app._cents.backend.common.dtos.Response;
+import io.app._cents.backend.common.pagination.PageResponse;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
+import io.app._cents.backend.payments.dtos.list.ListPaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.app._cents.backend.payments.models.PaymentRecord;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,5 +49,12 @@ public class PaymentRecordsController {
   public ResponseEntity<PaymentRecord> getPaymentRecord(
       @Parameter(description = "Payment record ID", required = true) @PathVariable String id) {
     return paymentRecordsService.getById(id);
+  }
+
+  @GetMapping()
+  @Operation(summary = "List records", description = "List payment records of user")
+  public ResponseEntity<PageResponse<PaymentRecord>> listPaymentRecords(
+      @Valid @ParameterObject ListPaymentRecordRequest req) {
+    return paymentRecordsService.listPaymentRecords(req);
   }
 }
