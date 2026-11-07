@@ -63,6 +63,17 @@ public class AuthService {
 
   public ResponseEntity<LoginUserResponse> login(LoginUserRequest loginUser) {
 
+    User existingUser =
+        usersService
+            .findByUsernameOrEmail(loginUser.getUsernameOrEmail())
+            .orElseThrow(
+                () -> {
+                  throw new NotFoundException("User");
+                });
+    if (existingUser.getPassword() == null || existingUser.getPassword().isBlank()) {
+      throw new BadRequestException("Password is not set for this user");
+    }
+
     User user;
     try {
       Authentication authentication =

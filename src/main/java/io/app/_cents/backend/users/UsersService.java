@@ -41,6 +41,10 @@ public class UsersService {
     return usersRepository.findByEmail(email);
   }
 
+  public Optional<User> findByUsernameOrEmail(String usernameOrEmail) {
+    return usersRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail);
+  }
+
   public User getReferenceById(String userId) {
     return usersRepository.getReferenceById(userId);
   }
@@ -73,5 +77,19 @@ public class UsersService {
 
     usersRepository.save(user);
     return new ResponseEntity<>(new Response(true, "User updated suceesfully"), HttpStatus.OK);
+  }
+
+  public ResponseEntity<User> getUser(String userId) {
+    User user =
+        usersRepository
+            .findById(userId)
+            .orElseThrow(
+                () -> {
+                  throw new NotFoundException("User");
+                });
+
+    user.setGoogleId(null);
+    user.setPassword(null);
+    return new ResponseEntity<>(user, HttpStatus.OK);
   }
 }
