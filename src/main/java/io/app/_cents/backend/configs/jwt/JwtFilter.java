@@ -56,6 +56,8 @@ public class JwtFilter extends OncePerRequestFilter {
     String path = request.getServletPath();
     return path.equals("/auth/login")
         || path.equals("/auth/register")
+        || path.equals("/auth/otp/request")
+        || path.equals("/auth/otp/verify")
         || path.equals("/auth/google");
   }
 }

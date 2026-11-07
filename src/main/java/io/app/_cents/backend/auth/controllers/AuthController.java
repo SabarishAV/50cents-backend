@@ -3,6 +3,8 @@ package io.app._cents.backend.auth.controllers;
 import io.app._cents.backend.auth.dtos.google.login.GoogleLoginRequest;
 import io.app._cents.backend.auth.dtos.login.LoginUserRequest;
 import io.app._cents.backend.auth.dtos.login.LoginUserResponse;
+import io.app._cents.backend.auth.dtos.otp.RequestOtpRequest;
+import io.app._cents.backend.auth.dtos.otp.VerifyOtpRequest;
 import io.app._cents.backend.auth.dtos.registration.RegisterUserRequest;
 import io.app._cents.backend.auth.services.AuthService;
 import io.app._cents.backend.auth.services.GoogleAuthService;
@@ -49,5 +51,20 @@ public class AuthController {
   public ResponseEntity<LoginUserResponse> googleLogin(
       @Valid @RequestBody GoogleLoginRequest request) {
     return googleAuthService.loginWithGoogle(request.getIdToken());
+  }
+
+  @PostMapping("/otp/request")
+  @Operation(
+      summary = "Request OTP",
+      description = "Sends a one-time code to the given email address.")
+  public ResponseEntity<Response> emailOtpRequest(@Valid @RequestBody RequestOtpRequest req) {
+    return authService.emailOtpRequest(req.getEmail());
+  }
+
+  @PostMapping("/otp/verify")
+  @Operation(summary = "Verify OTP", description = "Verifies OTP for login")
+  public ResponseEntity<LoginUserResponse> emailOtpVerify(
+      @Valid @RequestBody VerifyOtpRequest req) {
+    return authService.emailOtpVerify(req);
   }
 }

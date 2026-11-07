@@ -33,6 +33,22 @@ public class UsersService {
     return usersRepository.existsByUsername(username);
   }
 
+  public boolean existsByEmail(String email) {
+    return usersRepository.existsByEmail(email);
+  }
+
+  public Optional<User> findByEmail(String email) {
+    return usersRepository.findByEmail(email);
+  }
+
+  public User getReferenceById(String userId) {
+    return usersRepository.getReferenceById(userId);
+  }
+
+  public Optional<User> findUserByGoogleIdOrEmail(String googleId, String email) {
+    return usersRepository.findByGoogleId(googleId).or(() -> usersRepository.findByEmail(email));
+  }
+
   public User createUser(CreateUseRequest reqUser) {
     User user =
         User.builder()
@@ -44,14 +60,6 @@ public class UsersService {
             .role(UserRole.USER)
             .build();
     return usersRepository.save(user);
-  }
-
-  public User getReferenceById(String userId) {
-    return usersRepository.getReferenceById(userId);
-  }
-
-  public Optional<User> findUserByGoogleIdOrEmail(String googleId, String email) {
-    return usersRepository.findByGoogleId(googleId).or(() -> usersRepository.findByEmail(email));
   }
 
   @Transactional

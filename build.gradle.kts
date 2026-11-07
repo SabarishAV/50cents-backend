@@ -42,6 +42,12 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
 
+    // Mail
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+
+    //Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
     // Dev Tools & Code reduction
 	compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
