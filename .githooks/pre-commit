@@ -1,0 +1,6 @@
+#!/bin/sh
+echo "Running pre-commit checks..."
+./gradlew spotlessCheck compileJava --quiet || {
+  echo "Pre-commit failed. Run './gradlew spotlessApply' to auto-fix formatting."
+  exit 1
+}

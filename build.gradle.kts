@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.1.1"
 	id("io.spring.dependency-management") version "1.1.7"
+    id("com.diffplug.spotless") version "7.0.2"   // formatting
 }
 
 group = "io.app.50cents"
@@ -11,6 +12,14 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+}
+
+spotless {
+    java {
+        target("src/**/*.java")
+        googleJavaFormat()
+        removeUnusedImports()
+    }
 }
 
 repositories {
@@ -67,3 +76,10 @@ tasks.register<JavaExec>("seedDown") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("io.app._cents.backend.seeders.SeederDownApplication")
 }
+
+// Point git at the committed hooks folder automatically on every build
+tasks.register<Exec>("installGitHooks") {
+    commandLine("git", "config", "core.hooksPath", ".githooks")
+    isIgnoreExitValue = true
+}
+tasks.named("compileJava") { dependsOn("installGitHooks") }
