@@ -32,7 +32,13 @@ public class PaymentRecordsService {
 
   public ResponseEntity<Response> createPaymentRecord(CreatePaymentRecordRequest payment) {
 
-    List<Category> categories = categoriesService.listAll();
+    Category category =
+        categoriesService
+            .getByCode(payment.getCategory() != null ? payment.getCategory() : "OTHER")
+            .orElseThrow(
+                () -> {
+                  throw new NotFoundException("Category");
+                });
 
     PaymentRecord record =
         PaymentRecord.builder()
@@ -40,29 +46,11 @@ public class PaymentRecordsService {
             .recipientName(payment.getRecipientName())
             .note(payment.getNote())
             .paymentMedium(payment.getPaymentMedium())
-            .paidAt(Instant.now())
+            .paidAt(payment.getPaidAt() != null ? payment.getPaidAt() : Instant.now())
             .user(usersService.getReferenceById(CurrentUser.id()))
+            .category(category)
             .build();
 
-    // TODO: fix auto category selection
-    if (!payment.getCategory().isEmpty()) {
-      for (Category category : categories) {
-        if (category.getName().toLowerCase().contains(payment.getCategory().toLowerCase())) {
-          record.setCategory(category);
-          break;
-        }
-      }
-    }
-
-    // Setting category to "OTHER" if null
-    if (record.getCategory() == null) {
-      for (Category category : categories) {
-        if (category.getCode().contains("OTHER")) {
-          record.setCategory(category);
-          break;
-        }
-      }
-    }
     paymentRecordsRepository.save(record);
 
     return new ResponseEntity<>(

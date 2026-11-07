@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import tools.jackson.databind.exc.MismatchedInputException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -143,6 +145,36 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                     f -> Objects.toString(f.getDefaultMessage(), "Invalid value"),
                     (a, b) -> a));
     return build(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Validation failed", fields, request);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleHttpMessageNotReadable(
+      HttpMessageNotReadableException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    log.warn("Unreadable request body: {}", ex.getMessage());
+
+    Map<String, String> fields = null;
+    String message = "Request body is malformed";
+
+    if (ex.getCause() instanceof MismatchedInputException m) {
+      String field =
+          m.getPath().stream()
+              .map(
+                  ref ->
+                      ref.getPropertyName() != null
+                          ? ref.getPropertyName()
+                          : "[" + ref.getIndex() + "]")
+              .collect(Collectors.joining("."));
+      String expected =
+          m.getTargetType() != null ? m.getTargetType().getSimpleName() : "valid value";
+      if (!field.isBlank()) {
+        fields = Map.of(field, "Invalid value, expected " + expected);
+        message = "Invalid value for field '" + field + "'";
+      }
+    }
+    return build(HttpStatus.BAD_REQUEST, "MALFORMED_REQUEST", message, fields, request);
   }
 
   @Override

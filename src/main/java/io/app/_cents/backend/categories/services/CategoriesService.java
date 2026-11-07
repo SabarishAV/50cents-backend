@@ -4,6 +4,7 @@ import io.app._cents.backend.categories.CategoriesRepository;
 import io.app._cents.backend.categories.models.Category;
 import io.app._cents.backend.common.exceptions.NotFoundException;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,10 @@ public class CategoriesService {
 
   public Category findById(String id) {
     return categoriesRepository.findById(id).orElse(null);
+  }
+
+  public Optional<Category> getByCode(String code) {
+    return categoriesRepository.findByCode(code);
   }
 
   public ResponseEntity<Category> getCategoryById(String id) {
