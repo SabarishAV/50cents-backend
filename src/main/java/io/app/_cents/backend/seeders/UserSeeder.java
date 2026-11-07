@@ -37,6 +37,15 @@ public class UserSeeder implements CommandLineRunner {
           .role(UserRole.USER)
           .build();
 
+  User user2 =
+      User.builder()
+          .name("User 2")
+          .username("user2")
+          .email("user2@example.com")
+          .password(encoder.encode("user2"))
+          .role(UserRole.USER)
+          .build();
+
   User admin =
       User.builder()
           .name("Admin 1")
@@ -48,14 +57,16 @@ public class UserSeeder implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
-    Set<String> desiredUsernames = Set.of("user", "admin");
+    Set<String> desiredUsernames = Set.of("user", "user2", "admin");
     Set<String> existing =
         usersRepository.findAllByUsernameIn(desiredUsernames).stream()
             .map(User::getUsername)
             .collect(Collectors.toSet());
 
     List<User> toCreate =
-        List.of(user, admin).stream().filter(u -> !existing.contains(u.getUsername())).toList();
+        List.of(user, user2, admin).stream()
+            .filter(u -> !existing.contains(u.getUsername()))
+            .toList();
     if (toCreate.isEmpty()) {
       log.info("Users already seeded, nothing to do");
       return;

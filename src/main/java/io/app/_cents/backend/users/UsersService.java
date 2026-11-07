@@ -1,17 +1,23 @@
 package io.app._cents.backend.users;
 
+import io.app._cents.backend.common.dtos.Response;
+import io.app._cents.backend.common.exceptions.NotFoundException;
 import io.app._cents.backend.users.dtos.create.CreateUseRequest;
+import io.app._cents.backend.users.dtos.update.UpdateUserRequest;
 import io.app._cents.backend.users.models.User;
 import io.app._cents.backend.users.types.UserRole;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UsersService {
 
-  @Autowired UsersRepository usersRepository;
+  @Autowired private UsersRepository usersRepository;
 
   private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -46,5 +52,18 @@ public class UsersService {
 
   public Optional<User> findUserByGoogleIdOrEmail(String googleId, String email) {
     return usersRepository.findByGoogleId(googleId).or(() -> usersRepository.findByEmail(email));
+  }
+
+  @Transactional
+  public ResponseEntity<Response> update(String id, UpdateUserRequest req) {
+    User user = usersRepository.findById(id).orElseThrow(() -> new NotFoundException("User"));
+
+    if (req.getName() != null) user.setName(req.getName());
+    if (req.getUsername() != null) user.setUsername(req.getUsername());
+    if (req.getAvatar() != null) user.setAvatar(req.getAvatar());
+    if (req.getBankBalance() != null) user.setBankBalance(req.getBankBalance());
+
+    usersRepository.save(user);
+    return new ResponseEntity<>(new Response(true, "User updated suceesfully"), HttpStatus.OK);
   }
 }
