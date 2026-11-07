@@ -3,6 +3,7 @@ package io.app._cents.backend.payments;
 import io.app._cents.backend.common.dtos.Response;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
+import io.app._cents.backend.payments.models.PaymentRecord;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,6 +44,15 @@ public class PaymentRecordsController {
             @Valid @RequestBody UpdatePaymentRecordRequest body
     ) {
         return paymentRecordsService.updatePaymentRecord(id, body);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get record", description = "Get payment record")
+    public ResponseEntity<PaymentRecord> getPaymentRecord(
+            @Parameter(description = "Payment record ID", required = true)
+            @PathVariable String id
+    ) {
+        return paymentRecordsService.getById(id);
     }
 
 }

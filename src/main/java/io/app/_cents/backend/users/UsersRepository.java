@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UsersRepository extends JpaRepository<User, String> {
@@ -20,6 +22,8 @@ public interface UsersRepository extends JpaRepository<User, String> {
     boolean existsByUsername(String username);
 
     Optional<User> findByUsernameOrEmail(String username, String email);
+
+    List<User> findAllByUsernameIn(Set<String> usernames);
 
     @Query(
             value =

@@ -9,6 +9,7 @@ import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.app._cents.backend.payments.models.PaymentRecord;
 import io.app._cents.backend.users.UsersService;
+import io.app._cents.backend.users.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -116,5 +117,22 @@ public class PaymentRecordsService {
                 ),
                 HttpStatus.OK
         );
+    }
+
+    public ResponseEntity<PaymentRecord> getById(String paymentId){
+        PaymentRecord paymentRecord = paymentRecordsRepository
+                .findByIdAndUserId(paymentId, CurrentUser.id())
+                .orElseThrow(() -> { throw new NotFoundException("Payment Record"); });
+        User oldUser = paymentRecord.getUser();
+        paymentRecord.setUser(
+                User.builder()
+                .id(oldUser.getId())
+                .name(oldUser.getName())
+                        .username(oldUser.getUsername())
+                        .email(oldUser.getEmail())
+                        .avatar(oldUser.getAvatar())
+                        .build()
+        );
+        return new ResponseEntity<>(paymentRecord, HttpStatus.OK);
     }
 }

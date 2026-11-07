@@ -7,13 +7,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @Profile("seed")
+@Order(1)
 public class UserSeeder implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(UserSeeder.class);
 
@@ -43,9 +47,24 @@ public class UserSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        usersRepository.saveAll(
-                List.of(user, admin)
-        );
-        log.info("Users seeded successfully");
+        Set<String> desiredUsernames = Set.of("user", "admin");
+        Set<String> existing = usersRepository
+                .findAllByUsernameIn(desiredUsernames)
+                .stream()
+                .map(User::getUsername)
+                .collect(Collectors.toSet());
+
+        List<User> toCreate = List.of(user, admin)
+                .stream()
+                .filter(u -> !existing.contains(u.getUsername()))
+                .toList();
+        if (toCreate.isEmpty()) {
+            log.info("Users already seeded, nothing to do");
+            return;
+        }
+
+        usersRepository.saveAll(toCreate);
+        log.info("Seeded {} user(s): {}", toCreate.size(),
+                toCreate.stream().map(User::getUsername).toList());
     }
 }
