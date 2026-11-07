@@ -2,7 +2,6 @@ package io.app._cents.backend.users.models;
 
 import io.app._cents.backend.users.types.UserRole;
 import jakarta.persistence.*;
-
 import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
@@ -18,43 +17,42 @@ import org.hibernate.type.SqlTypes;
 @Entity
 @Table(name = "users")
 public class User {
-    @Id
-    @Column(updatable = false, nullable = false)
-    private String id;
+  @Id
+  @Column(updatable = false, nullable = false)
+  private String id;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+  @Column(nullable = false, unique = true)
+  private String username;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+  @Column(nullable = false, unique = true)
+  private String email;
 
-    @Column(name = "google_id", unique = true)
-    private String googleId;
+  @Column(name = "google_id", unique = true)
+  private String googleId;
 
-    @Column
-    private String password;
+  @Column private String password;
 
-    @Column(columnDefinition = "TEXT")
-    private String avatar;
+  @Column(columnDefinition = "TEXT")
+  private String avatar;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
-    private UserRole role;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.VARCHAR)
+  private UserRole role;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+  @Column(name = "created_at", nullable = false)
+  private Instant createdAt;
 
-    @PrePersist
-    public void generateId() {
-        if (id == null) {
-            id = UUID.randomUUID().toString();
-        }
-        if (createdAt == null) {
-            createdAt = Instant.now();
-        }
+  @PrePersist
+  public void generateId() {
+    if (id == null) {
+      id = UUID.randomUUID().toString();
     }
+    if (createdAt == null) {
+      createdAt = Instant.now();
+    }
+  }
 }

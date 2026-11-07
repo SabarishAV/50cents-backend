@@ -1,7 +1,7 @@
 package io.app._cents.backend.configs;
 
-import io.app._cents.backend.configs.jwt.JwtFilter;
 import io.app._cents.backend.common.exceptions.ExceptionHandlerFilter;
+import io.app._cents.backend.configs.jwt.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -27,54 +27,56 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired private UserDetailsService userDetailsService;
+  @Autowired private UserDetailsService userDetailsService;
 
-    @Autowired private JwtFilter jwtFilter;
-    @Autowired private ExceptionHandlerFilter exceptionHandlerFilter;
+  @Autowired private JwtFilter jwtFilter;
+  @Autowired private ExceptionHandlerFilter exceptionHandlerFilter;
 
-    @Autowired
-    @Qualifier("handlerExceptionResolver")
-    private HandlerExceptionResolver resolver;
+  @Autowired
+  @Qualifier("handlerExceptionResolver")
+  private HandlerExceptionResolver resolver;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.cors(Customizer.withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(
-                        request ->
-                                request
-                                        .requestMatchers(
-                                                "/auth/register",
-                                                "/auth/login",
-                                                "/auth/google",
-                                                "/swagger-ui/index.html",
-                                                "/swagger-ui/**",
-                                                "/v3/api-docs/**",
-                                                "/api-docs"
-                                        )
-                                        .permitAll()
-                                        .anyRequest()
-                                        .authenticated())
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(exceptionHandlerFilter, JwtFilter.class)
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint((req, res, ex) -> resolver.resolveException(req, res, null, ex))
-                        .accessDeniedHandler((req, res, ex) -> resolver.resolveException(req, res, null, ex)))
-                .build();
-    }
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http.cors(Customizer.withDefaults())
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(
+            request ->
+                request
+                    .requestMatchers(
+                        "/auth/register",
+                        "/auth/login",
+                        "/auth/google",
+                        "/swagger-ui/index.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/api-docs")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(exceptionHandlerFilter, JwtFilter.class)
+        .exceptionHandling(
+            e ->
+                e.authenticationEntryPoint(
+                        (req, res, ex) -> resolver.resolveException(req, res, null, ex))
+                    .accessDeniedHandler(
+                        (req, res, ex) -> resolver.resolveException(req, res, null, ex)))
+        .build();
+  }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-        provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
-        return provider;
-    }
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+    provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
+    return provider;
+  }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
-        return config.getAuthenticationManager();
-    }
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+      throws Exception {
+    return config.getAuthenticationManager();
+  }
 }

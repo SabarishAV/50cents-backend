@@ -9,6 +9,5 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class GoogleLoginRequest {
-    @NotBlank
-    private String idToken;
+  @NotBlank private String idToken;
 }

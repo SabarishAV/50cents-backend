@@ -16,18 +16,15 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableAutoConfiguration
 @EntityScan("io.app._cents.backend")
 @EnableJpaRepositories("io.app._cents.backend")
-@Import({
-        CategorySeeder.class,
-        UserSeeder.class,
-        PaymentRecordSeeder.class
-})
+@Import({CategorySeeder.class, UserSeeder.class, PaymentRecordSeeder.class})
 public class SeederApplication {
 
-    public static void main(String[] args) {
-        ConfigurableApplicationContext context = new SpringApplicationBuilder(SeederApplication.class)
-                .web(WebApplicationType.NONE)
-                .profiles("seed")
-                .run(args);
-        System.exit(SpringApplication.exit(context));
-    }
+  public static void main(String[] args) {
+    ConfigurableApplicationContext context =
+        new SpringApplicationBuilder(SeederApplication.class)
+            .web(WebApplicationType.NONE)
+            .profiles("seed")
+            .run(args);
+    System.exit(SpringApplication.exit(context));
+  }
 }

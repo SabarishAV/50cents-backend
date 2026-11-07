@@ -3,16 +3,20 @@ package io.app._cents.backend.common.exceptions;
 import org.springframework.http.HttpStatus;
 
 public class AppException extends RuntimeException {
-    private final HttpStatus status;
-    private final String code;
+  private final HttpStatus status;
+  private final String code;
 
-    public AppException(HttpStatus status, String code, String message) {
-        super(message);
-        this.status = status;
-        this.code = code;
-    }
+  public AppException(HttpStatus status, String code, String message) {
+    super(message);
+    this.status = status;
+    this.code = code;
+  }
 
-    public HttpStatus getStatus() { return status; }
+  public HttpStatus getStatus() {
+    return status;
+  }
 
-    public String getCode() { return code; }
+  public String getCode() {
+    return code;
+  }
 }

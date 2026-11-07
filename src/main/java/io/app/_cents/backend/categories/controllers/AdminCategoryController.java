@@ -20,14 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 @AdminOnly
 public class AdminCategoryController {
 
-    @Autowired AdminCategoriesService adminCategoriesService;
+  @Autowired AdminCategoriesService adminCategoriesService;
 
-    @PostMapping
-    @Operation(summary = "Create category", description = "Create category by admin")
-    public ResponseEntity<Response> createCategory(
-            @Valid @RequestBody CreateCategoryRequest req
-    ){
-       return adminCategoriesService.create(req);
-    }
-
+  @PostMapping
+  @Operation(summary = "Create category", description = "Create category by admin")
+  public ResponseEntity<Response> createCategory(@Valid @RequestBody CreateCategoryRequest req) {
+    return adminCategoriesService.create(req);
+  }
 }

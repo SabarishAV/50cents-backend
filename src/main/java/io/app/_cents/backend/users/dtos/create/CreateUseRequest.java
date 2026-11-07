@@ -13,21 +13,19 @@ import lombok.NoArgsConstructor;
 @Data
 public class CreateUseRequest {
 
-    @NotBlank
-    @Size(max = 100)
-    private String name;
+  @NotBlank
+  @Size(max = 100)
+  private String name;
 
-    @Size(min = 3, max = 30)
-    @Pattern(regexp = "^[a-zA-Z0-9._]+$", message = "only letters, numbers, . and _ allowed")
-    private String username;
+  @Size(min = 3, max = 30)
+  @Pattern(regexp = "^[a-zA-Z0-9._]+$", message = "only letters, numbers, . and _ allowed")
+  private String username;
 
-    @NotBlank
-    @Email
-    private String email;
+  @NotBlank @Email private String email;
 
-    @NotBlank
-    @Size(min = 8, max = 72, message = "password must be 8 to 72 characters")
-    private String password;
+  @NotBlank
+  @Size(min = 8, max = 72, message = "password must be 8 to 72 characters")
+  private String password;
 
-    private String avatar;
+  private String avatar;
 }

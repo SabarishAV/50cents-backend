@@ -17,42 +17,34 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Payment Record APIs", description = "User's payment record APIs")
 public class PaymentRecordsController {
 
-    @Autowired PaymentRecordsService paymentRecordsService;
+  @Autowired PaymentRecordsService paymentRecordsService;
 
-    @PostMapping()
-    @Operation(summary = "Create record", description = "Create payment record")
-    public ResponseEntity<Response> createPaymentRecord(
-            @Valid @RequestBody CreatePaymentRecordRequest payment
-    ) {
-        return paymentRecordsService.createPaymentRecord(payment);
-    }
+  @PostMapping()
+  @Operation(summary = "Create record", description = "Create payment record")
+  public ResponseEntity<Response> createPaymentRecord(
+      @Valid @RequestBody CreatePaymentRecordRequest payment) {
+    return paymentRecordsService.createPaymentRecord(payment);
+  }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete record", description = "Delete payment record")
-    public ResponseEntity<Response> deletePaymentRecord(
-            @Parameter(description = "Payment record ID", required = true)
-            @PathVariable String id
-            ) {
-        return paymentRecordsService.deletePaymentRecord(id);
-    }
+  @DeleteMapping("/{id}")
+  @Operation(summary = "Delete record", description = "Delete payment record")
+  public ResponseEntity<Response> deletePaymentRecord(
+      @Parameter(description = "Payment record ID", required = true) @PathVariable String id) {
+    return paymentRecordsService.deletePaymentRecord(id);
+  }
 
-    @PatchMapping("/{id}")
-    @Operation(summary = "Update record", description = "Update payment record")
-    public ResponseEntity<Response> updatePaymentRecord(
-            @Parameter(description = "Payment record ID", required = true)
-            @PathVariable String id,
-            @Valid @RequestBody UpdatePaymentRecordRequest body
-    ) {
-        return paymentRecordsService.updatePaymentRecord(id, body);
-    }
+  @PatchMapping("/{id}")
+  @Operation(summary = "Update record", description = "Update payment record")
+  public ResponseEntity<Response> updatePaymentRecord(
+      @Parameter(description = "Payment record ID", required = true) @PathVariable String id,
+      @Valid @RequestBody UpdatePaymentRecordRequest body) {
+    return paymentRecordsService.updatePaymentRecord(id, body);
+  }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Get record", description = "Get payment record")
-    public ResponseEntity<PaymentRecord> getPaymentRecord(
-            @Parameter(description = "Payment record ID", required = true)
-            @PathVariable String id
-    ) {
-        return paymentRecordsService.getById(id);
-    }
-
+  @GetMapping("/{id}")
+  @Operation(summary = "Get record", description = "Get payment record")
+  public ResponseEntity<PaymentRecord> getPaymentRecord(
+      @Parameter(description = "Payment record ID", required = true) @PathVariable String id) {
+    return paymentRecordsService.getById(id);
+  }
 }

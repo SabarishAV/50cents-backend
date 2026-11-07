@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class LoginUserResponse {
 
-    private boolean success;
+  private boolean success;
 
-    private String token;
-
+  private String token;
 }

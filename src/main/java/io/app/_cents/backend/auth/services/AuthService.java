@@ -23,73 +23,57 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
-    private static final Logger logger =
-            LoggerFactory.getLogger(AuthService.class);
+  private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+  @Autowired AuthenticationManager authenticationManager;
 
-    @Autowired private JwtService jwtService;
-    @Autowired private UsersService usersService;
+  @Autowired private JwtService jwtService;
+  @Autowired private UsersService usersService;
 
-    public ResponseEntity<Response> registerUser(RegisterUserRequest registerUser) {
-            boolean doesUserExists = usersService.checkUserExists(
-                    registerUser.getUsername(),
-                    registerUser.getEmail()
-            );
-            if(doesUserExists){
-                throw new UserAlreadyExistsException("User already exists by the email or username");
-            }
-
-            usersService.createUser(
-                    new CreateUseRequest(
-                            registerUser.getName(),
-                            registerUser.getUsername(),
-                            registerUser.getEmail(),
-                            registerUser.getPassword(),
-                            registerUser.getAvatar()
-                    )
-            );
-
-            return new ResponseEntity<>(new Response(
-                    true,
-                    "User created successfully"
-            ), HttpStatus.CREATED);
-
+  public ResponseEntity<Response> registerUser(RegisterUserRequest registerUser) {
+    boolean doesUserExists =
+        usersService.checkUserExists(registerUser.getUsername(), registerUser.getEmail());
+    if (doesUserExists) {
+      throw new UserAlreadyExistsException("User already exists by the email or username");
     }
 
-    public ResponseEntity<LoginUserResponse> login(LoginUserRequest loginUser) {
+    usersService.createUser(
+        new CreateUseRequest(
+            registerUser.getName(),
+            registerUser.getUsername(),
+            registerUser.getEmail(),
+            registerUser.getPassword(),
+            registerUser.getAvatar()));
 
-        User user;
-        try {
-            Authentication authentication =authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginUser.getUsernameOrEmail(), loginUser.getPassword()));
-            user = ((UserPrincipal) authentication.getPrincipal()).getUser();
-        } catch(Exception e) {
-            logger.error(e.getMessage());
-            throw new InvalidCredentialsException();
-        }
+    return new ResponseEntity<>(
+        new Response(true, "User created successfully"), HttpStatus.CREATED);
+  }
 
+  public ResponseEntity<LoginUserResponse> login(LoginUserRequest loginUser) {
 
-            String token =
-                    jwtService.generateToken(
-                            user.getId(),
-                            user.getName(),
-                            user.getUsername(),
-                            user.getEmail(),
-                            user.getAvatar(),
-                            user.getRole()
-                    );
-            if (token == null || token.trim().isEmpty()) {
-                throw new IllegalStateException("Token not generated");
-            }
-            return new ResponseEntity<>(new LoginUserResponse(
-                    true,
-                    token
-            ), HttpStatus.OK);
+    User user;
+    try {
+      Authentication authentication =
+          authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(
+                  loginUser.getUsernameOrEmail(), loginUser.getPassword()));
+      user = ((UserPrincipal) authentication.getPrincipal()).getUser();
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      throw new InvalidCredentialsException();
     }
 
-
-
+    String token =
+        jwtService.generateToken(
+            user.getId(),
+            user.getName(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getAvatar(),
+            user.getRole());
+    if (token == null || token.trim().isEmpty()) {
+      throw new IllegalStateException("Token not generated");
+    }
+    return new ResponseEntity<>(new LoginUserResponse(true, token), HttpStatus.OK);
+  }
 }

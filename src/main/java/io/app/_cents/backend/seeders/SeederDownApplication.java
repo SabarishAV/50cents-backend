@@ -19,24 +19,26 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @EnableAutoConfiguration
 public class SeederDownApplication {
 
-    private static final Logger log = LoggerFactory.getLogger(SeederDownApplication.class);
+  private static final Logger log = LoggerFactory.getLogger(SeederDownApplication.class);
 
-    public static void main(String[] args) {
-        ConfigurableApplicationContext context = new SpringApplicationBuilder(SeederDownApplication.class)
-                .web(WebApplicationType.NONE)
-                .profiles("seed-down")
-                .properties("spring.jpa.hibernate.ddl-auto=none")
-                .run(args);
-        System.exit(SpringApplication.exit(context));
-    }
+  public static void main(String[] args) {
+    ConfigurableApplicationContext context =
+        new SpringApplicationBuilder(SeederDownApplication.class)
+            .web(WebApplicationType.NONE)
+            .profiles("seed-down")
+            .properties("spring.jpa.hibernate.ddl-auto=none")
+            .run(args);
+    System.exit(SpringApplication.exit(context));
+  }
 
-    @Bean
-    CommandLineRunner dropEverything(JdbcTemplate jdbc, @Value("${spring.datasource.url}") String url) {
-        return args -> {
-            log.warn("Dropping everything in {}", url);
-            jdbc.execute("DROP SCHEMA public CASCADE");
-            jdbc.execute("CREATE SCHEMA public");
-            log.info("Database wiped");
-        };
-    }
+  @Bean
+  CommandLineRunner dropEverything(
+      JdbcTemplate jdbc, @Value("${spring.datasource.url}") String url) {
+    return args -> {
+      log.warn("Dropping everything in {}", url);
+      jdbc.execute("DROP SCHEMA public CASCADE");
+      jdbc.execute("CREATE SCHEMA public");
+      log.info("Database wiped");
+    };
+  }
 }

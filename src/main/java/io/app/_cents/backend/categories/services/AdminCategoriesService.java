@@ -12,22 +12,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class AdminCategoriesService {
 
-    @Autowired
-    CategoriesRepository categoriesRepository;
+  @Autowired CategoriesRepository categoriesRepository;
 
-    public ResponseEntity<Response> create(CreateCategoryRequest c){
-        Category category = Category.builder()
-                .name(c.getName())
-                .code(c.getCode())
-                .build();
-        if(!c.getImage().isEmpty()){
-            category.setImage(c.getImage());
-        }
-
-        categoriesRepository.save(category);
-        return new ResponseEntity<>(new Response(
-                true,
-                "Category created successfully"
-        ), HttpStatus.CREATED);
+  public ResponseEntity<Response> create(CreateCategoryRequest c) {
+    Category category = Category.builder().name(c.getName()).code(c.getCode()).build();
+    if (!c.getImage().isEmpty()) {
+      category.setImage(c.getImage());
     }
+
+    categoriesRepository.save(category);
+    return new ResponseEntity<>(
+        new Response(true, "Category created successfully"), HttpStatus.CREATED);
+  }
 }
