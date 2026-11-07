@@ -46,6 +46,7 @@ public class PaymentRecordsService {
             .recipientName(payment.getRecipientName())
             .note(payment.getNote())
             .paymentMedium(payment.getPaymentMedium())
+            .transactionType(payment.getTransactionType())
             .paidAt(payment.getPaidAt() != null ? payment.getPaidAt() : Instant.now())
             .user(usersService.getReferenceById(CurrentUser.id()))
             .category(category)
@@ -87,6 +88,9 @@ public class PaymentRecordsService {
     }
     if (request.getPaymentMedium() != null) {
       payment.setPaymentMedium(request.getPaymentMedium().trim());
+    }
+    if (request.getTransactionType() != null) {
+      payment.setTransactionType(request.getTransactionType());
     }
     if (request.getCategoryId() != null) {
       Category category = categoriesService.findById(request.getCategoryId().trim());
@@ -131,15 +135,19 @@ public class PaymentRecordsService {
                 req.getYear(),
                 req.getMonth(),
                 req.getOnlyThisMonth(),
+                req.getTransactionType() == null ? null : req.getTransactionType().name(),
                 req.getPageNumber() - 1,
                 req.getPageSize())
             .stream()
             .map(row -> toPaymentRecord(row))
             .toList();
-
     long total =
         paymentRecordsRepository.countPaymentsOfUser(
-            CurrentUser.id(), req.getYear(), req.getMonth(), req.getOnlyThisMonth());
+            CurrentUser.id(),
+            req.getYear(),
+            req.getMonth(),
+            req.getOnlyThisMonth(),
+            req.getTransactionType() == null ? null : req.getTransactionType().name());
 
     PageResponse<PaymentRecord> res =
         PageResponse.toPaginated(rows, req.getPageNumber(), req.getPageSize(), total);

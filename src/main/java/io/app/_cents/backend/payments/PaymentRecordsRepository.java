@@ -22,6 +22,7 @@ public interface PaymentRecordsRepository extends JpaRepository<PaymentRecord, S
                               pr.recipient_name AS "recipientName",
                               pr.note AS "note",
                               pr.payment_medium AS "paymentMedium",
+                              pr.transaction_type AS "transactionType",
                               pr.paid_at AS "paidAt",
                               c.id AS "categoryId",
                               c.name AS "categoryName",
@@ -38,6 +39,10 @@ public interface PaymentRecordsRepository extends JpaRepository<PaymentRecord, S
                                 OR
                                 (:onlyThisMonth = false AND EXTRACT(MONTH FROM pr.paid_at) <= :month)
                               )
+                              AND (
+                                  CAST(:transactionType AS VARCHAR) IS NULL
+                                   OR pr.transaction_type = CAST(:transactionType AS VARCHAR)
+                              )
                             ORDER BY pr.paid_at DESC, pr.id DESC
                             LIMIT :pageSize OFFSET (:pageNumber * :pageSize);
                                      \s""",
@@ -47,6 +52,7 @@ public interface PaymentRecordsRepository extends JpaRepository<PaymentRecord, S
       @Param("year") int year,
       @Param("month") int month,
       @Param("onlyThisMonth") boolean onlyThisMonth,
+      @Param("transactionType") String transactionType,
       @Param("pageNumber") int pageNumber,
       @Param("pageSize") int pageSize);
 
@@ -62,6 +68,10 @@ public interface PaymentRecordsRepository extends JpaRepository<PaymentRecord, S
                             (:onlyThisMonth = true AND EXTRACT(MONTH FROM pr.paid_at) = :month)
                             OR
                             (:onlyThisMonth = false AND EXTRACT(MONTH FROM pr.paid_at) <= :month)
+                        )
+                        AND (
+                            CAST(:transactionType AS VARCHAR) IS NULL
+                            OR pr.transaction_type = CAST(:transactionType AS VARCHAR)
                         );
                     """,
       nativeQuery = true)
@@ -69,5 +79,6 @@ public interface PaymentRecordsRepository extends JpaRepository<PaymentRecord, S
       @Param("userId") String userId,
       @Param("year") int year,
       @Param("month") int month,
-      @Param("onlyThisMonth") boolean onlyThisMonth);
+      @Param("onlyThisMonth") boolean onlyThisMonth,
+      @Param("transactionType") String transactionType);
 }

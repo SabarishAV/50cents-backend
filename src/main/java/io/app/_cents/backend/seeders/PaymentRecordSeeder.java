@@ -4,6 +4,7 @@ import io.app._cents.backend.categories.CategoriesRepository;
 import io.app._cents.backend.categories.models.Category;
 import io.app._cents.backend.payments.PaymentRecordsRepository;
 import io.app._cents.backend.payments.models.PaymentRecord;
+import io.app._cents.backend.payments.models.enums.TransactionType;
 import io.app._cents.backend.users.UsersRepository;
 import io.app._cents.backend.users.models.User;
 import java.math.BigDecimal;
@@ -60,6 +61,7 @@ public class PaymentRecordSeeder implements CommandLineRunner {
                 .recipientName("ABC Petrol Pump")
                 .note("Petrol")
                 .paymentMedium("Google Pay")
+                .transactionType(TransactionType.DEBIT)
                 .user(user)
                 .category(categoryByCode.get("FUEL"))
                 .build(),
@@ -68,8 +70,18 @@ public class PaymentRecordSeeder implements CommandLineRunner {
                 .recipientName("XYZ Stores")
                 .note("Grocery Items")
                 .paymentMedium("Amazon Pay")
+                .transactionType(TransactionType.DEBIT)
                 .user(user)
                 .category(categoryByCode.get("GROCERIES"))
+                .build(),
+            PaymentRecord.builder()
+                .amount(BigDecimal.valueOf(1500))
+                .recipientName("John")
+                .note("Repay")
+                .paymentMedium("PayTM")
+                .transactionType(TransactionType.CREDIT)
+                .user(user)
+                .category(categoryByCode.get("REFUND"))
                 .build());
 
     paymentRecordsRepository.saveAll(payments);

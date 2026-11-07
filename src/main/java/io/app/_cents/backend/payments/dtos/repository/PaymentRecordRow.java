@@ -15,6 +15,8 @@ public interface PaymentRecordRow {
 
   String getPaymentMedium();
 
+  String getTransactionType();
+
   Instant getPaidAt();
 
   UUID getCategoryId();

@@ -3,6 +3,7 @@ package io.app._cents.backend.payments.mappers;
 import io.app._cents.backend.categories.models.Category;
 import io.app._cents.backend.payments.dtos.repository.PaymentRecordRow;
 import io.app._cents.backend.payments.models.PaymentRecord;
+import io.app._cents.backend.payments.models.enums.TransactionType;
 
 public class PaymentRecordMapper {
 
@@ -15,6 +16,10 @@ public class PaymentRecordMapper {
         .recipientName(row.getRecipientName())
         .note(row.getNote())
         .paymentMedium(row.getPaymentMedium())
+        .transactionType(
+            row.getTransactionType() == null
+                ? null
+                : TransactionType.valueOf(row.getTransactionType()))
         .paidAt(row.getPaidAt())
         .category(
             Category.builder()

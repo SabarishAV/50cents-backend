@@ -1,6 +1,7 @@
 package io.app._cents.backend.payments.models;
 
 import io.app._cents.backend.categories.models.Category;
+import io.app._cents.backend.payments.models.enums.TransactionType;
 import io.app._cents.backend.users.models.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -38,6 +39,10 @@ public class PaymentRecord {
 
   @Column(name = "payment_medium")
   private String paymentMedium;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "transaction_type", nullable = false, length = 10)
+  private TransactionType transactionType;
 
   @Column(name = "paid_at", nullable = false)
   private Instant paidAt;

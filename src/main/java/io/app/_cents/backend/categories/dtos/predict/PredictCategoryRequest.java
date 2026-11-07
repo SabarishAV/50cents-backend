@@ -1,7 +1,9 @@
 package io.app._cents.backend.categories.dtos.predict;
 
+import io.app._cents.backend.payments.models.enums.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +23,13 @@ public class PredictCategoryRequest {
   @NotBlank(message = "Recipient is required")
   @Size(max = 255, message = "Recipient must not exceed 255 characters")
   private String recipient;
+
+  @Schema(
+      description = "Whether money went out (DEBIT) or came in (CREDIT)",
+      example = "DEBIT",
+      requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotNull(message = "Transaction type is required")
+  private TransactionType transactionType;
 
   @Schema(
       description = "Optional note about the payment",

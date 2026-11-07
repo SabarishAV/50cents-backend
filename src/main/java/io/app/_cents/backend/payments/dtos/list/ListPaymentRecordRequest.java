@@ -1,5 +1,6 @@
 package io.app._cents.backend.payments.dtos.list;
 
+import io.app._cents.backend.payments.models.enums.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -36,6 +37,12 @@ public class ListPaymentRecordRequest {
       defaultValue = "false",
       nullable = true)
   private Boolean onlyThisMonth = false;
+
+  @Schema(
+      description = "Whether money went out (DEBIT) or came in (CREDIT)",
+      example = "DEBIT",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  private TransactionType transactionType;
 
   @Schema(
       description = "Page number.",

@@ -59,7 +59,12 @@ public class CategorySeeder implements CommandLineRunner {
           category("Pets", "PETS", null),
           category("Cash Withdrawal", "CASH_WITHDRAWAL", null),
           category("Transfers", "TRANSFERS", null),
-          category("Other", "OTHER", null));
+          category("Other", "OTHER", null),
+          category("Salary", "SALARY", null),
+          category("Refund", "REFUND", null),
+          category("Interest", "INTEREST", null),
+          category("Cashback", "CASHBACK", null),
+          category("Other Income", "OTHER_INCOME", null));
 
   @Override
   public void run(String... args) {

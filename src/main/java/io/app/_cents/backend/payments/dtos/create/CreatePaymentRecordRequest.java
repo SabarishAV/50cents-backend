@@ -1,5 +1,6 @@
 package io.app._cents.backend.payments.dtos.create;
 
+import io.app._cents.backend.payments.models.enums.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -52,6 +53,13 @@ public class CreatePaymentRecordRequest {
       nullable = true,
       requiredMode = Schema.RequiredMode.NOT_REQUIRED)
   private String paymentMedium;
+
+  @Schema(
+      description = "Whether money went out (DEBIT) or came in (CREDIT)",
+      example = "DEBIT",
+      requiredMode = Schema.RequiredMode.REQUIRED)
+  @NotNull(message = "Transaction type is required")
+  private TransactionType transactionType;
 
   @Schema(
       description = "Category code (e.g. FOOD, TRAVEL)",

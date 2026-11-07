@@ -3,6 +3,7 @@ package io.app._cents.backend.categories.services;
 import io.app._cents.backend.categories.CategoriesRepository;
 import io.app._cents.backend.categories.dtos.predict.PredictCategoryRequest;
 import io.app._cents.backend.categories.models.Category;
+import io.app._cents.backend.payments.models.enums.TransactionType;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +19,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CategoryPredictionService {
 
-  private static final String FALLBACK_CODE = "OTHER";
   private static final int NAME_WEIGHT = 3;
   private static final int NOTE_WEIGHT = 1;
+
+  private static final String FALLBACK_CODE = "OTHER";
+  private static final String CREDIT_FALLBACK_CODE = "OTHER_INCOME";
+  private static final Set<String> INCOME_ONLY =
+      Set.of("SALARY", "REFUND", "INTEREST", "CASHBACK", "OTHER_INCOME");
+  private static final Set<String> BOTH_WAYS = Set.of("TRANSFERS", "INVESTMENTS", "OTHER");
 
   // Order = tie-break priority (earlier wins on equal score)
   private static final Map<String, List<String>> KEYWORDS = new LinkedHashMap<>();
@@ -295,6 +301,10 @@ public class CategoryPredictionService {
     put("PETS", "pet", "vet", "dog", "cat", "pet food", "heads up for tails");
     put("CASH_WITHDRAWAL", "atm", "cash withdrawal", "withdraw", "withdrawal");
     put("TRANSFERS", "transfer", "sent to", "imps", "neft", "rtgs", "self");
+    put("SALARY", "salary", "payroll", "stipend", "wages", "bonus", "incentive");
+    put("REFUND", "refund", "reversal", "reversed", "chargeback", "returned");
+    put("INTEREST", "interest", "dividend");
+    put("CASHBACK", "cashback", "reward", "rewards", "cash back");
   }
 
   private static void put(String code, String... keywords) {
@@ -308,14 +318,27 @@ public class CategoryPredictionService {
     Set<String> validCodes =
         categoriesRepository.findAll().stream().map(Category::getCode).collect(Collectors.toSet());
 
+    boolean isCredit = req.getTransactionType() == TransactionType.CREDIT;
+
+    // Credits fall back to OTHER_INCOME (if it exists in DB), debits to OTHER
+    String fallback =
+        isCredit && validCodes.contains(CREDIT_FALLBACK_CODE)
+            ? CREDIT_FALLBACK_CODE
+            : FALLBACK_CODE;
+
     String name = normalize(req.getRecipient());
     String note = normalize(req.getNote());
 
-    String bestCode = FALLBACK_CODE;
+    String bestCode = fallback;
     int bestScore = 0;
 
     for (Map.Entry<String, List<String>> entry : KEYWORDS.entrySet()) {
-      if (!validCodes.contains(entry.getKey())) continue;
+      String code = entry.getKey();
+      if (!validCodes.contains(code)) continue;
+
+      // Credits: income categories + both-way ones. Debits: everything except income-only.
+      boolean allowed = BOTH_WAYS.contains(code) || (isCredit == INCOME_ONLY.contains(code));
+      if (!allowed) continue;
 
       int score = 0;
       for (String kw : entry.getValue()) {
@@ -325,13 +348,12 @@ public class CategoryPredictionService {
       }
       if (score > bestScore) {
         bestScore = score;
-        bestCode = entry.getKey();
+        bestCode = code;
       }
     }
 
-    return new ResponseEntity<>(
-        Map.of("category", validCodes.contains(bestCode) ? bestCode : FALLBACK_CODE),
-        HttpStatus.OK);
+    String result = validCodes.contains(bestCode) ? bestCode : FALLBACK_CODE;
+    return new ResponseEntity<>(Map.of("category", result), HttpStatus.OK);
   }
 
   /** lowercase, strip punctuation, pad with spaces so word-boundary checks are easy */

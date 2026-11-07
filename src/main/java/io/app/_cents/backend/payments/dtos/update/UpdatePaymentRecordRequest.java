@@ -1,12 +1,9 @@
 package io.app._cents.backend.payments.dtos.update;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.AssertTrue;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import io.app._cents.backend.payments.models.enums.TransactionType;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +41,12 @@ public class UpdatePaymentRecordRequest {
   @Pattern(regexp = NOT_BLANK, message = "Payment medium must not be blank")
   private String paymentMedium;
 
+  @Schema(
+      description = "Whether money went out (DEBIT) or came in (CREDIT)",
+      example = "DEBIT",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  private TransactionType transactionType;
+
   @Size(max = 64, message = "Category id must not exceed 64 characters")
   @Pattern(regexp = NOT_BLANK, message = "Category id must not be blank")
   private String categoryId;
@@ -55,6 +58,7 @@ public class UpdatePaymentRecordRequest {
         || recipientName != null
         || note != null
         || paymentMedium != null
+        || transactionType != null
         || categoryId != null;
   }
 }

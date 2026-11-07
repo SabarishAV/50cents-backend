@@ -2,6 +2,7 @@ package io.app._cents.backend.users.models;
 
 import io.app._cents.backend.users.types.UserRole;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
@@ -38,6 +39,9 @@ public class User {
   @Column(columnDefinition = "TEXT")
   private String avatar;
 
+  @Column(name = "bank_balance", nullable = false, precision = 12, scale = 2)
+  private BigDecimal bankBalance;
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.VARCHAR)
@@ -53,6 +57,9 @@ public class User {
     }
     if (createdAt == null) {
       createdAt = Instant.now();
+    }
+    if (bankBalance == null) {
+      bankBalance = BigDecimal.ZERO;
     }
   }
 }
