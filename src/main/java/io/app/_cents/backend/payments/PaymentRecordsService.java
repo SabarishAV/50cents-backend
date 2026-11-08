@@ -10,6 +10,9 @@ import io.app._cents.backend.common.pagination.PageResponse;
 import io.app._cents.backend.common.utils.CurrentUser;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.list.ListPaymentRecordRequest;
+import io.app._cents.backend.payments.dtos.repository.PaymentTotalsRow;
+import io.app._cents.backend.payments.dtos.summary.PaymentSummaryRequest;
+import io.app._cents.backend.payments.dtos.summary.PaymentSummaryResponse;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.app._cents.backend.payments.models.PaymentRecord;
 import io.app._cents.backend.users.UsersService;
@@ -126,14 +129,16 @@ public class PaymentRecordsService {
   }
 
   public ResponseEntity<PageResponse<PaymentRecord>> listPaymentRecords(
-      ListPaymentRecordRequest req) {
+      String userId, ListPaymentRecordRequest req) {
 
     List<PaymentRecord> rows =
         paymentRecordsRepository
             .getPaymentsOfUser(
-                CurrentUser.id(),
+                userId,
                 req.getYear(),
                 req.getMonth(),
+                req.getToYear(),
+                req.getToMonth(),
                 req.getOnlyThisMonth(),
                 req.getTransactionType() == null ? null : req.getTransactionType().name(),
                 req.getPageNumber() - 1,
@@ -146,6 +151,8 @@ public class PaymentRecordsService {
             CurrentUser.id(),
             req.getYear(),
             req.getMonth(),
+            req.getToYear(),
+            req.getToMonth(),
             req.getOnlyThisMonth(),
             req.getTransactionType() == null ? null : req.getTransactionType().name());
 
@@ -153,5 +160,20 @@ public class PaymentRecordsService {
         PageResponse.toPaginated(rows, req.getPageNumber(), req.getPageSize(), total);
 
     return new ResponseEntity<>(res, HttpStatus.OK);
+  }
+
+  public ResponseEntity<PaymentSummaryResponse> getSummary(
+      String userId, PaymentSummaryRequest request) {
+    PaymentTotalsRow totals =
+        paymentRecordsRepository.getPaymentTotalsOfUser(
+            userId,
+            request.year(),
+            request.month(),
+            request.onlyThisMonth(),
+            request.toYear(),
+            request.toMonth());
+
+    return new ResponseEntity<>(
+        PaymentSummaryResponse.of(totals.getTotalCredit(), totals.getTotalDebit()), HttpStatus.OK);
   }
 }

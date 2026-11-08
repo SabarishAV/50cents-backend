@@ -2,8 +2,11 @@ package io.app._cents.backend.payments;
 
 import io.app._cents.backend.common.dtos.Response;
 import io.app._cents.backend.common.pagination.PageResponse;
+import io.app._cents.backend.common.utils.CurrentUser;
 import io.app._cents.backend.payments.dtos.create.CreatePaymentRecordRequest;
 import io.app._cents.backend.payments.dtos.list.ListPaymentRecordRequest;
+import io.app._cents.backend.payments.dtos.summary.PaymentSummaryRequest;
+import io.app._cents.backend.payments.dtos.summary.PaymentSummaryResponse;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.app._cents.backend.payments.models.PaymentRecord;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,6 +58,19 @@ public class PaymentRecordsController {
   @Operation(summary = "List records", description = "List payment records of user")
   public ResponseEntity<PageResponse<PaymentRecord>> listPaymentRecords(
       @Valid @ParameterObject ListPaymentRecordRequest req) {
-    return paymentRecordsService.listPaymentRecords(req);
+    return paymentRecordsService.listPaymentRecords(CurrentUser.id(), req);
+  }
+
+  @GetMapping("/summary")
+  @Operation(
+      summary = "Get payment summary",
+      description =
+          "Returns the total credit (income), total debit (spend) and net for the logged-in user. "
+              + "By default, returns the given month (onlyThisMonth=true) or January up to the given "
+              + "month (onlyThisMonth=false). If both toYear and toMonth are provided, returns the "
+              + "custom range from year/month to toYear/toMonth (inclusive) and onlyThisMonth is ignored.")
+  public ResponseEntity<PaymentSummaryResponse> getSummary(
+      @Valid @ParameterObject PaymentSummaryRequest req) {
+    return paymentRecordsService.getSummary(CurrentUser.id(), req);
   }
 }

@@ -42,7 +42,7 @@ public class JwtService {
         .claim("avatar", avatar)
         .claim("role", role)
         .issuedAt(now)
-        .expiration(new Date(now.getTime() + 24 * 60 * 60 * 1000))
+        .expiration(null)
         .signWith(getKey())
         .compact();
   }
@@ -75,8 +75,13 @@ public class JwtService {
     return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
   }
 
+  /**
+   * Returns true only if the token has an 'exp' claim that is in the past. Tokens without an 'exp'
+   * claim are treated as non-expiring by design. No exp for tokens for now
+   */
   private boolean isTokenExpired(String token) {
-    return extractExpiration(token).before(new Date());
+    Date expiration = extractExpiration(token);
+    return expiration != null && expiration.before(new Date());
   }
 
   private Date extractExpiration(String token) {
