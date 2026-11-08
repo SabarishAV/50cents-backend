@@ -37,6 +37,10 @@ public class UsersService {
     return usersRepository.existsByEmail(email);
   }
 
+  public Optional<User> findById(String id) {
+    return usersRepository.findById(id);
+  }
+
   public Optional<User> findByEmail(String email) {
     return usersRepository.findByEmail(email);
   }

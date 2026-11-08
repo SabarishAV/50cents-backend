@@ -15,8 +15,10 @@ import io.app._cents.backend.payments.dtos.summary.PaymentSummaryRequest;
 import io.app._cents.backend.payments.dtos.summary.PaymentSummaryResponse;
 import io.app._cents.backend.payments.dtos.update.UpdatePaymentRecordRequest;
 import io.app._cents.backend.payments.models.PaymentRecord;
+import io.app._cents.backend.payments.models.enums.TransactionType;
 import io.app._cents.backend.users.UsersService;
 import io.app._cents.backend.users.models.User;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,22 @@ public class PaymentRecordsService {
                   throw new NotFoundException("Category");
                 });
 
+    User user =
+        usersService
+            .findById(CurrentUser.id())
+            .orElseThrow(
+                () -> {
+                  throw new NotFoundException("User");
+                });
+
+    if (payment.isUpdateBankBalance()) {
+      BigDecimal amount = payment.getAmount();
+      if (payment.getTransactionType() == TransactionType.DEBIT) {
+        amount = amount.negate();
+      }
+      user.setBankBalance(user.getBankBalance().add(amount));
+    }
+
     PaymentRecord record =
         PaymentRecord.builder()
             .amount(payment.getAmount())
@@ -50,8 +68,9 @@ public class PaymentRecordsService {
             .note(payment.getNote())
             .paymentMedium(payment.getPaymentMedium())
             .transactionType(payment.getTransactionType())
+            .bankUpdated(payment.isUpdateBankBalance())
             .paidAt(payment.getPaidAt() != null ? payment.getPaidAt() : Instant.now())
-            .user(usersService.getReferenceById(CurrentUser.id()))
+            .user(user)
             .category(category)
             .build();
 

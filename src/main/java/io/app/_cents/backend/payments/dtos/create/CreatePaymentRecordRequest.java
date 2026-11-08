@@ -71,6 +71,13 @@ public class CreatePaymentRecordRequest {
   private String category;
 
   @Schema(
+      description = "Whether the user's bank balance should be updated with this payment.",
+      example = "false",
+      defaultValue = "false",
+      requiredMode = Schema.RequiredMode.REQUIRED)
+  private boolean updateBankBalance;
+
+  @Schema(
       description =
           "When the payment was made. Optional — defaults to now if omitted or null. "
               + "Accepts ISO-8601 instant (e.g. 2026-11-07T10:15:30Z) or epoch seconds.",

@@ -44,6 +44,9 @@ public class PaymentRecord {
   @Column(name = "transaction_type", nullable = false, length = 10)
   private TransactionType transactionType;
 
+  @Column(name = "bank_updated", nullable = false)
+  private boolean bankUpdated;
+
   @Column(name = "paid_at", nullable = false)
   private Instant paidAt;
 
