@@ -49,6 +49,8 @@ public class SecurityConfig {
                         "/auth/google",
                         "/auth/otp/request",
                         "/auth/otp/verify",
+                        "/auth/forgot-password/request",
+                        "/auth/forgot-password/verify",
                         "/swagger-ui/index.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
