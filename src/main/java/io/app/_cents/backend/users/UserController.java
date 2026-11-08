@@ -2,6 +2,8 @@ package io.app._cents.backend.users;
 
 import io.app._cents.backend.common.dtos.Response;
 import io.app._cents.backend.common.utils.CurrentUser;
+import io.app._cents.backend.users.dtos.delete.DeleteAccountOtpRequest;
+import io.app._cents.backend.users.dtos.delete.VerifyDeleteAccountOtpRequest;
 import io.app._cents.backend.users.dtos.email.ChangeEmailOtpRequest;
 import io.app._cents.backend.users.dtos.email.VerifyChangeEmailOtpRequest;
 import io.app._cents.backend.users.dtos.update.UpdateUserRequest;
@@ -46,5 +48,25 @@ public class UserController {
       description = "Verifies OTP to change email of logged in user and updates email")
   public ResponseEntity<Response> changeEmailVerify(@Valid VerifyChangeEmailOtpRequest req) {
     return usersService.changeEmailOtpVerify(CurrentUser.id(), req.getOtp());
+  }
+
+  @PostMapping("delete/request")
+  @Operation(
+      summary = "Delete user email request",
+      description =
+          "Request OTP to delete logged in user."
+              + "Password is an optional field since sone users are "
+              + "signed up using google and they don't have password. "
+              + "Will throw error if user haven't linked any email to their account")
+  public ResponseEntity<Response> deleteAccountRequest(@Valid DeleteAccountOtpRequest req) {
+    return usersService.deleteAccountRequest(CurrentUser.id(), req.getPassword());
+  }
+
+  @PostMapping("delete/verify")
+  @Operation(
+      summary = "Delete user OTP verify",
+      description = "Verifies OTP to delete account of logged in user")
+  public ResponseEntity<Response> deleteUser(@Valid VerifyDeleteAccountOtpRequest req) {
+    return usersService.deleteAccountOtpVerify(CurrentUser.id(), req.getOtp());
   }
 }

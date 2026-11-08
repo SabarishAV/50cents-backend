@@ -30,6 +30,10 @@ public class UsersService {
     return "otp:reset-mail:" + userId;
   }
 
+  private static String getDeleteAccountKey(String userId) {
+    return "otp:delete-acc:" + userId;
+  }
+
   @Autowired private UsersRepository usersRepository;
 
   @Autowired private EmailService emailService;
@@ -162,5 +166,47 @@ public class UsersService {
     usersRepository.save(user);
     redisService.delete(getChangeEmailKey(userId));
     return new ResponseEntity<>(new Response("Email updated successfully"), HttpStatus.OK);
+  }
+
+  public ResponseEntity<Response> deleteAccountRequest(String userId, String password) {
+    User user = usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("User"));
+    if (user.getEmail() == null || user.getEmail().isEmpty()) {
+      throw new BadRequestException(
+          "No email is linked with this account. Update email to delete account");
+    }
+    if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+      if (password == null || password.isEmpty()) {
+        throw new BadRequestException("Account password is required");
+      }
+      boolean passwordMatch = encoder.matches(password, user.getPassword());
+      if (!passwordMatch) {
+        throw new BadRequestException("Incorrect password");
+      }
+    }
+    int otp = generate6DigitOtp();
+    emailService.sendHtml(
+        user.getEmail(),
+        "OTP to delete account",
+        getEmailHtml("OTP to delete account", "OTP: " + otp));
+    redisService.set(getDeleteAccountKey(userId), String.valueOf(otp), Duration.ofMinutes(5));
+    return new ResponseEntity<>(
+        new Response(true, "OTP send to email successfully - Valid for 5 minutes"), HttpStatus.OK);
+  }
+
+  public ResponseEntity<Response> deleteAccountOtpVerify(String userId, String otp) {
+    User user = usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("User"));
+
+    String storedOtp = redisService.get(getDeleteAccountKey(userId));
+    if (storedOtp == null) {
+      throw new BadRequestException("OTP expired or not requested to delete account");
+    }
+
+    if (!Objects.equals(storedOtp, otp)) {
+      throw new InvalidOtpException();
+    }
+
+    usersRepository.delete(user);
+    redisService.delete(getDeleteAccountKey(userId));
+    return new ResponseEntity<>(new Response("Account deleted successfully"), HttpStatus.OK);
   }
 }
