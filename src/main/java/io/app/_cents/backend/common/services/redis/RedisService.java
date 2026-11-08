@@ -32,4 +32,8 @@ public class RedisService {
   public boolean delete(String key) {
     return Boolean.TRUE.equals(redis.delete(key));
   }
+
+  public boolean exists(String key) {
+    return Boolean.TRUE.equals(redis.hasKey(key));
+  }
 }

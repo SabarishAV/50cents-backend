@@ -1,11 +1,20 @@
 package io.app._cents.backend.users;
 
+import static io.app._cents.backend.common.services.email.EmailTemplates.getEmailHtml;
+import static io.app._cents.backend.common.utils.OtpGenerator.generate6DigitOtp;
+
 import io.app._cents.backend.common.dtos.Response;
+import io.app._cents.backend.common.exceptions.BadRequestException;
+import io.app._cents.backend.common.exceptions.InvalidOtpException;
 import io.app._cents.backend.common.exceptions.NotFoundException;
+import io.app._cents.backend.common.services.email.EmailService;
+import io.app._cents.backend.common.services.redis.RedisService;
 import io.app._cents.backend.users.dtos.create.CreateUseRequest;
 import io.app._cents.backend.users.dtos.update.UpdateUserRequest;
 import io.app._cents.backend.users.models.User;
 import io.app._cents.backend.users.types.UserRole;
+import java.time.Duration;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +26,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UsersService {
 
+  private static String getChangeEmailKey(String userId) {
+    return "otp:reset-mail:" + userId;
+  }
+
   @Autowired private UsersRepository usersRepository;
+
+  @Autowired private EmailService emailService;
+  @Autowired private RedisService redisService;
 
   private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -95,5 +111,56 @@ public class UsersService {
     user.setGoogleId(null);
     user.setPassword(null);
     return new ResponseEntity<>(user, HttpStatus.OK);
+  }
+
+  public ResponseEntity<Response> changeEmailOtpRequest(String userId, String rawEmail) {
+    String email = rawEmail.trim().toLowerCase();
+
+    User user =
+        usersRepository
+            .findById(userId)
+            .orElseThrow(
+                () -> {
+                  throw new NotFoundException("User");
+                });
+
+    if (user.getEmail() != null && user.getEmail().equalsIgnoreCase(email)) {
+      throw new BadRequestException(
+          "The new email address is the same as your current one. Please enter a different email.");
+    }
+
+    boolean emailUserExists = usersRepository.existsByEmail(email);
+    if (emailUserExists) {
+      throw new BadRequestException("User with this email already exists");
+    }
+
+    int otp = generate6DigitOtp();
+    emailService.sendHtml(
+        email, "OTP to update email", getEmailHtml("OTP to update email", "OTP: " + otp));
+    redisService.set(
+        getChangeEmailKey(userId), String.valueOf(otp) + ":" + email, Duration.ofMinutes(5));
+    return new ResponseEntity<>(
+        new Response(true, "OTP send to email successfully - Valid for 5 minutes"), HttpStatus.OK);
+  }
+
+  public ResponseEntity<Response> changeEmailOtpVerify(String userId, String otp) {
+    User user = usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("User"));
+
+    String key = redisService.get(getChangeEmailKey(userId));
+    if (key == null) {
+      throw new BadRequestException("OTP expired or not requested to change email");
+    }
+    String[] parts = key.split(":", 2);
+    String storedOtp = parts[0];
+    String storedEmail = parts[1];
+
+    if (!Objects.equals(storedOtp, otp)) {
+      throw new InvalidOtpException();
+    }
+
+    user.setEmail(storedEmail);
+    usersRepository.save(user);
+    redisService.delete(getChangeEmailKey(userId));
+    return new ResponseEntity<>(new Response("Email updated successfully"), HttpStatus.OK);
   }
 }

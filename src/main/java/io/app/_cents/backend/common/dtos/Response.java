@@ -12,4 +12,8 @@ public class Response {
   private boolean success;
 
   private String message;
+
+  public Response(String message) {
+    this(true, message);
+  }
 }

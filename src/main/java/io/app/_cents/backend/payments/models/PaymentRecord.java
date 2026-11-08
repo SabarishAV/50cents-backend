@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Data
 @AllArgsConstructor
@@ -52,10 +54,12 @@ public class PaymentRecord {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "user_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "category_id", nullable = false)
+  @OnDelete(action = OnDeleteAction.RESTRICT)
   private Category category;
 
   @PrePersist

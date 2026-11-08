@@ -37,6 +37,8 @@ public class AuthService {
 
   @Autowired AuthenticationManager authenticationManager;
 
+  private static final String LOGIN_OTP_KEY_PREFIX = "otp:login:";
+
   @Autowired private JwtService jwtService;
   @Autowired private UsersService usersService;
   @Autowired private EmailService emailService;
@@ -107,7 +109,7 @@ public class AuthService {
 
     int otp = generate6DigitOtp();
     emailService.sendHtml(email, "OTP for login", getEmailHtml("OTP for login", "OTP: " + otp));
-    redisService.set("otp-login:" + email, String.valueOf(otp), Duration.ofMinutes(5));
+    redisService.set(LOGIN_OTP_KEY_PREFIX + email, String.valueOf(otp), Duration.ofMinutes(5));
 
     return new ResponseEntity<>(
         new Response(true, "OTP send successfully. Valid for 5 minutes"), HttpStatus.OK);
@@ -122,7 +124,7 @@ public class AuthService {
                   throw new NotFoundException("User");
                 });
 
-    String otp = redisService.get("otp-login:" + req.getEmail());
+    String otp = redisService.get(LOGIN_OTP_KEY_PREFIX + req.getEmail());
     if (otp == null) {
       throw new BadRequestException("OTP expired");
     }
@@ -130,7 +132,7 @@ public class AuthService {
       throw new BadRequestException("Incorrect OTP");
     }
 
-    redisService.delete("otp-login:" + req.getEmail());
+    redisService.delete(LOGIN_OTP_KEY_PREFIX + req.getEmail());
 
     String token =
         jwtService.generateToken(
