@@ -11,6 +11,8 @@ public interface PaymentRecordRow {
 
   String getRecipientName();
 
+  String getRecipientIdentifier();
+
   String getNote();
 
   String getPaymentMedium();

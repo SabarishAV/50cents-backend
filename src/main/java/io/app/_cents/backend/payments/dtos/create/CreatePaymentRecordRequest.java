@@ -39,6 +39,16 @@ public class CreatePaymentRecordRequest {
   private String recipientName;
 
   @Schema(
+      description =
+          "Optional external identifier of the payment recipient "
+              + "(e.g. UPI ID, phone number, account number, wallet handle)",
+      example = "coffee.shop@okhdfcbank",
+      maxLength = 255,
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+  @Size(max = 255, message = "Recipient identifier must not exceed 255 characters")
+  private String recipientIdentifier;
+
+  @Schema(
       description = "Optional note about the payment",
       example = "Morning coffee",
       maxLength = 2048,

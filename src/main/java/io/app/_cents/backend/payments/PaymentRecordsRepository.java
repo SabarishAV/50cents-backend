@@ -21,6 +21,7 @@ public interface PaymentRecordsRepository extends JpaRepository<PaymentRecord, S
                       pr.id AS "id",
                       pr.amount AS "amount",
                       pr.recipient_name AS "recipientName",
+                      pr.recipient_identifier AS "recipientIdentifier",
                       pr.note AS "note",
                       pr.payment_medium AS "paymentMedium",
                       pr.transaction_type AS "transactionType",

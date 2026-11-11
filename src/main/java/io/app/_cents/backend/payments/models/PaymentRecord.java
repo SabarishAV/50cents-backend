@@ -37,6 +37,9 @@ public class PaymentRecord {
   @Column(name = "recipient_name")
   private String recipientName;
 
+  @Column(name = "recipient_identifier", length = 255)
+  private String recipientIdentifier;
+
   private String note;
 
   @Column(name = "payment_medium")

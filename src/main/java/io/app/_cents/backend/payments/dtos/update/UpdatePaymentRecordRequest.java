@@ -34,6 +34,10 @@ public class UpdatePaymentRecordRequest {
   @Pattern(regexp = NOT_BLANK, message = "Recipient name must not be blank")
   private String recipientName;
 
+  @Size(max = 255, message = "Recipient Identifier must not exceed 255 characters")
+  @Pattern(regexp = NOT_BLANK, message = "Recipient Identifier must not be blank")
+  private String recipientIdentifier;
+
   @Size(max = 1000, message = "Note must not exceed 1000 characters")
   private String note;
 
@@ -56,6 +60,7 @@ public class UpdatePaymentRecordRequest {
   public boolean isAtLeastOneFieldPresent() {
     return amount != null
         || recipientName != null
+        || recipientIdentifier != null
         || note != null
         || paymentMedium != null
         || transactionType != null

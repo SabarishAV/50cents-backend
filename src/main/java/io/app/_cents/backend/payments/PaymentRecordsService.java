@@ -65,6 +65,7 @@ public class PaymentRecordsService {
         PaymentRecord.builder()
             .amount(payment.getAmount())
             .recipientName(payment.getRecipientName())
+            .recipientIdentifier(payment.getRecipientIdentifier())
             .note(payment.getNote())
             .paymentMedium(payment.getPaymentMedium())
             .transactionType(payment.getTransactionType())
@@ -104,6 +105,9 @@ public class PaymentRecordsService {
     }
     if (request.getRecipientName() != null) {
       payment.setRecipientName(request.getRecipientName().trim());
+    }
+    if (request.getRecipientIdentifier() != null) {
+      payment.setRecipientIdentifier(request.getRecipientIdentifier().trim());
     }
     if (request.getNote() != null) {
       payment.setNote(request.getNote().trim());

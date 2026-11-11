@@ -14,6 +14,7 @@ public class PaymentRecordMapper {
         .id(String.valueOf(row.getId()))
         .amount(row.getAmount())
         .recipientName(row.getRecipientName())
+        .recipientIdentifier(row.getRecipientIdentifier())
         .note(row.getNote())
         .paymentMedium(row.getPaymentMedium())
         .transactionType(
