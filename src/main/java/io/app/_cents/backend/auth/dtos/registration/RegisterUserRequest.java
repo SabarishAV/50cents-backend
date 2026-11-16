@@ -67,11 +67,16 @@ public class RegisterUserRequest {
   private String avatar;
 
   @Schema(
-      description = "Optional UPI ID for payments (e.g. `name@bank`).",
-      example = "jane.doe@okhdfcbank",
+      description =
+          "Optional payment identifier: either a UPI ID (e.g. `name@bank`) "
+              + "or a 10-digit Indian mobile number (optionally prefixed with +91).",
+      example = "jane.doe@okhdfcbank  |  9876543210  |  +919876543210",
       requiredMode = Schema.RequiredMode.NOT_REQUIRED,
       nullable = true,
-      pattern = "^[a-zA-Z0-9._-]+@[a-zA-Z]+$")
-  @Pattern(regexp = "^[a-zA-Z0-9._-]+@[a-zA-Z]+$", message = "invalid UPI ID format")
+      pattern = "^(?:[a-zA-Z0-9._-]+@[a-zA-Z]+|(?:\\+?91)?[6-9]\\d{9})$")
+  @Pattern(
+      regexp = "^(?:[a-zA-Z0-9._-]+@[a-zA-Z]+|(?:\\+?91)?[6-9]\\d{9})$",
+      message =
+          "must be a valid UPI ID (e.g. name@bank) or a 10-digit mobile number (optionally prefixed with +91)")
   private String upiId;
 }
