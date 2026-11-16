@@ -3,15 +3,15 @@ package io.app._cents.backend.categories.services;
 import io.app._cents.backend.categories.CategoriesRepository;
 import io.app._cents.backend.categories.dtos.predict.PredictCategoryRequest;
 import io.app._cents.backend.categories.models.Category;
+import io.app._cents.backend.categories.services.llm.GroqCategoryPredictor;
 import io.app._cents.backend.payments.models.enums.TransactionType;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -312,37 +312,59 @@ public class CategoryPredictionService {
   }
 
   private final CategoriesRepository categoriesRepository;
+  private final GroqCategoryPredictor groqCategoryPredictor;
 
   @Transactional(readOnly = true)
-  public ResponseEntity<Map<String, String>> predictCode(PredictCategoryRequest req) {
-    Set<String> validCodes =
-        categoriesRepository.findAll().stream().map(Category::getCode).collect(Collectors.toSet());
+  public String predictCode(PredictCategoryRequest req) {
+    List<Category> categories = categoriesRepository.findAll();
+    Set<String> validCodes = categories.stream().map(Category::getCode).collect(Collectors.toSet());
 
-    boolean isCredit = req.getTransactionType() == TransactionType.CREDIT;
+    boolean isCredit = req != null && req.getTransactionType() == TransactionType.CREDIT;
+    String fallback = resolveFallback(isCredit, validCodes);
+    Set<String> allowedCodes = resolveAllowedCodes(isCredit, validCodes);
 
-    // Credits fall back to OTHER_INCOME (if it exists in DB), debits to OTHER
-    String fallback =
-        isCredit && validCodes.contains(CREDIT_FALLBACK_CODE)
-            ? CREDIT_FALLBACK_CODE
-            : FALLBACK_CODE;
+    if (groqCategoryPredictor != null && groqCategoryPredictor.isEnabled()) {
+      Optional<String> llmPrediction =
+          groqCategoryPredictor.predict(
+              req == null ? null : req.getRecipient(),
+              req == null ? null : req.getNote(),
+              req == null ? null : req.getTransactionType(),
+              categories,
+              allowedCodes);
+      if (llmPrediction.isPresent()) {
+        return llmPrediction.get();
+      }
+    }
 
-    String name = normalize(req.getRecipient());
-    String note = normalize(req.getNote());
+    String keywordPrediction = predictByKeywords(req, isCredit, validCodes);
+    if (keywordPrediction != null) {
+      return keywordPrediction;
+    }
+    if (fallback != null) {
+      return fallback;
+    }
+    return validCodes.contains(FALLBACK_CODE)
+        ? FALLBACK_CODE
+        : validCodes.stream().findFirst().orElse(FALLBACK_CODE);
+  }
 
-    String bestCode = fallback;
+  private String predictByKeywords(
+      PredictCategoryRequest req, boolean isCredit, Set<String> validCodes) {
+    String name = normalize(req == null ? null : req.getRecipient());
+    String note = normalize(req == null ? null : req.getNote());
+
+    String bestCode = null;
     int bestScore = 0;
 
     for (Map.Entry<String, List<String>> entry : KEYWORDS.entrySet()) {
       String code = entry.getKey();
       if (!validCodes.contains(code)) continue;
-
-      // Credits: income categories + both-way ones. Debits: everything except income-only.
-      boolean allowed = BOTH_WAYS.contains(code) || (isCredit == INCOME_ONLY.contains(code));
-      if (!allowed) continue;
+      if (!isAllowedForType(code, isCredit)) continue;
 
       int score = 0;
       for (String kw : entry.getValue()) {
-        int words = kw.split(" ").length;
+        if (kw == null || kw.isBlank()) continue;
+        int words = kw.trim().split("\\s+").length;
         if (matches(name, kw)) score += NAME_WEIGHT * words;
         if (matches(note, kw)) score += NOTE_WEIGHT * words;
       }
@@ -352,8 +374,27 @@ public class CategoryPredictionService {
       }
     }
 
-    String result = validCodes.contains(bestCode) ? bestCode : FALLBACK_CODE;
-    return new ResponseEntity<>(Map.of("category", result), HttpStatus.OK);
+    return bestCode;
+  }
+
+  private static Set<String> resolveAllowedCodes(boolean isCredit, Set<String> validCodes) {
+    return validCodes.stream()
+        .filter(code -> isAllowedForType(code, isCredit))
+        .collect(Collectors.toSet());
+  }
+
+  private static boolean isAllowedForType(String code, boolean isCredit) {
+    return BOTH_WAYS.contains(code) || (isCredit == INCOME_ONLY.contains(code));
+  }
+
+  private static String resolveFallback(boolean isCredit, Set<String> validCodes) {
+    if (isCredit && validCodes.contains(CREDIT_FALLBACK_CODE)) {
+      return CREDIT_FALLBACK_CODE;
+    }
+    if (validCodes.contains(FALLBACK_CODE)) {
+      return FALLBACK_CODE;
+    }
+    return null;
   }
 
   /** lowercase, strip punctuation, pad with spaces so word-boundary checks are easy */

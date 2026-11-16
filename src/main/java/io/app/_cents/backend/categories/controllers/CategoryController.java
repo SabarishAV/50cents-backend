@@ -47,6 +47,7 @@ public class CategoryController {
       description = "Predict a category for a payment based on recipient and note")
   public ResponseEntity<Map<String, String>> predictCategory(
       @Valid @ParameterObject PredictCategoryRequest req) {
-    return categoryPredictionService.predictCode(req);
+    String category = categoryPredictionService.predictCode(req);
+    return new ResponseEntity<>(Map.of("category", category), HttpStatus.OK);
   }
 }
