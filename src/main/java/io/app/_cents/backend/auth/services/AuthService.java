@@ -20,7 +20,7 @@ import io.app._cents.backend.common.services.email.EmailService;
 import io.app._cents.backend.common.services.redis.RedisService;
 import io.app._cents.backend.configs.jwt.JwtService;
 import io.app._cents.backend.users.UsersService;
-import io.app._cents.backend.users.dtos.create.CreateUseRequest;
+import io.app._cents.backend.users.dtos.create.CreateUserRequest;
 import io.app._cents.backend.users.models.User;
 import io.app._cents.backend.users.models.others.UserPrincipal;
 import java.time.Duration;
@@ -63,12 +63,13 @@ public class AuthService {
     }
 
     usersService.createUser(
-        new CreateUseRequest(
+        new CreateUserRequest(
             registerUser.getName(),
             registerUser.getUsername(),
             registerUser.getEmail(),
             registerUser.getPassword(),
-            registerUser.getAvatar()));
+            registerUser.getAvatar(),
+            registerUser.getUpiId()));
 
     return new ResponseEntity<>(
         new Response(true, "User created successfully"), HttpStatus.CREATED);

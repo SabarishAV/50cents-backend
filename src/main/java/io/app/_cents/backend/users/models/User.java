@@ -42,6 +42,9 @@ public class User {
   @Column(name = "bank_balance", nullable = false, precision = 12, scale = 2)
   private BigDecimal bankBalance;
 
+  @Column(name = "upi_id")
+  private String upiId;
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   @JdbcTypeCode(SqlTypes.VARCHAR)

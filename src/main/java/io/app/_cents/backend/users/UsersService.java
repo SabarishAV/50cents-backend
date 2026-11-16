@@ -9,7 +9,7 @@ import io.app._cents.backend.common.exceptions.InvalidOtpException;
 import io.app._cents.backend.common.exceptions.NotFoundException;
 import io.app._cents.backend.common.services.email.EmailService;
 import io.app._cents.backend.common.services.redis.RedisService;
-import io.app._cents.backend.users.dtos.create.CreateUseRequest;
+import io.app._cents.backend.users.dtos.create.CreateUserRequest;
 import io.app._cents.backend.users.dtos.update.UpdateUserRequest;
 import io.app._cents.backend.users.models.User;
 import io.app._cents.backend.users.types.UserRole;
@@ -77,7 +77,7 @@ public class UsersService {
     return usersRepository.findByGoogleId(googleId).or(() -> usersRepository.findByEmail(email));
   }
 
-  public User createUser(CreateUseRequest reqUser) {
+  public User createUser(CreateUserRequest reqUser) {
     User user =
         User.builder()
             .name(reqUser.getName())
@@ -86,6 +86,7 @@ public class UsersService {
             .password(encoder.encode(reqUser.getPassword()))
             .avatar(reqUser.getAvatar())
             .role(UserRole.USER)
+            .upiId(reqUser.getUpiId())
             .build();
     return usersRepository.save(user);
   }
@@ -98,6 +99,7 @@ public class UsersService {
     if (req.getUsername() != null) user.setUsername(req.getUsername());
     if (req.getAvatar() != null) user.setAvatar(req.getAvatar());
     if (req.getBankBalance() != null) user.setBankBalance(req.getBankBalance());
+    if (req.getUpiId() != null) user.setUpiId(req.getUpiId());
 
     usersRepository.save(user);
     return new ResponseEntity<>(new Response(true, "User updated suceesfully"), HttpStatus.OK);
@@ -208,5 +210,15 @@ public class UsersService {
     usersRepository.delete(user);
     redisService.delete(getDeleteAccountKey(userId));
     return new ResponseEntity<>(new Response("Account deleted successfully"), HttpStatus.OK);
+  }
+
+  public ResponseEntity<Response> removeUpiId(String userId) {
+    User user = usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("User"));
+    if (user.getUpiId() == null) {
+      throw new BadRequestException("This account is not linked with any upi id");
+    }
+    user.setUpiId(null);
+    usersRepository.save(user);
+    return new ResponseEntity<>(new Response("Upi id deleted successfully"), HttpStatus.OK);
   }
 }

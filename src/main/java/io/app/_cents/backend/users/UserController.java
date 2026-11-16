@@ -69,4 +69,12 @@ public class UserController {
   public ResponseEntity<Response> deleteUser(@Valid VerifyDeleteAccountOtpRequest req) {
     return usersService.deleteAccountOtpVerify(CurrentUser.id(), req.getOtp());
   }
+
+  @DeleteMapping("upi-id")
+  @Operation(
+      summary = "Remove UPI ID",
+      description = "Sets the user's UPI ID to null, effectively removing it.")
+  public ResponseEntity<Response> removeUpiId() {
+    return usersService.removeUpiId(CurrentUser.id());
+  }
 }

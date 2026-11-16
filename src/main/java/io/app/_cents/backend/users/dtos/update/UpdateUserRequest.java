@@ -42,9 +42,22 @@ public class UpdateUserRequest {
   @DecimalMin(value = "0", message = "Bank balance must be >= 0")
   private BigDecimal bankBalance;
 
+  @Schema(
+      description = "Optional UPI ID for payments (e.g. `name@bank`).",
+      example = "jane.doe@okhdfcbank",
+      requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+      nullable = true,
+      pattern = "^[a-zA-Z0-9._-]+@[a-zA-Z]+$")
+  @Pattern(regexp = "^[a-zA-Z0-9._-]+@[a-zA-Z]+$", message = "invalid UPI ID format")
+  private String upiId;
+
   @AssertTrue(message = "At least one field must be provided")
   @JsonIgnore
   public boolean isAtLeastOneFieldProvided() {
-    return name != null || username != null || avatar != null || bankBalance != null;
+    return name != null
+        || username != null
+        || avatar != null
+        || bankBalance != null
+        || upiId != null;
   }
 }
