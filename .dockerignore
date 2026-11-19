@@ -1,0 +1,28 @@
+# Never bake local secrets/config into the image.
+.env
+.env.*
+*.env
+
+# Local build/cache artifacts (they are regenerated inside the image).
+.git
+.gradle
+build/
+out/
+bin/
+
+# IDE / editor files
+.idea
+.vscode
+*.iml
+
+# Repo housekeeping (not needed at runtime)
+.githooks
+.github
+.gitattributes
+.gitignore
+README.md
+HELP.md
+LICENSE
+
+# Logs
+*.log
