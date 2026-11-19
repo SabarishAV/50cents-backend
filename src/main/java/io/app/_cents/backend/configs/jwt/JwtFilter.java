@@ -60,6 +60,7 @@ public class JwtFilter extends OncePerRequestFilter {
         || path.equals("/auth/otp/verify")
         || path.equals("/auth/forgot-password/request")
         || path.equals("/auth/forgot-password/verify")
+        || path.equals("/health")
         || path.equals("/auth/google");
   }
 }

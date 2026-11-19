@@ -51,6 +51,7 @@ public class SecurityConfig {
                         "/auth/otp/verify",
                         "/auth/forgot-password/request",
                         "/auth/forgot-password/verify",
+                        "/health",
                         "/swagger-ui/index.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
