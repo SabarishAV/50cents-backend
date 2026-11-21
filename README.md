@@ -1,124 +1,233 @@
-# 50cents Backend
+<div align="center">
 
-A robust Spring Boot backend API for the 50cents application, featuring user authentication, payment tracking, and category management with comprehensive security and data persistence.
+<img src="assets/logo.png" width="140" alt="50cents logo" />
 
-## Table of Contents
+# 50cents
 
+**A focused, privacy-first UPI companion — and the API that runs it.**
+
+A Spring Boot service that powers the 50cents app: authentication, payments, categories, OTP mail flows, and a smart redirect page that hands every UPI link back to the app that opened it.
+
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)](https://redis.io)
+[![Build](https://img.shields.io/badge/Build-Gradle%20(Kotlin%20DSL)-02303A?logo=gradle&logoColor=white)](https://gradle.org)
+[![API Docs](https://img.shields.io/badge/API%20Docs-OpenAPI%203-85EA2D?logo=openapiinitiative&logoColor=black)](#api-documentation)
+[![Issues](https://img.shields.io/badge/Issues-welcome-00B4FF)](https://github.com/SabarishAV/50cents-backend/issues)
+
+</div>
+
+---
+
+## Table of contents
+
+- [Overview](#overview)
 - [Features](#features)
-- [Tech Stack](#tech-stack)
+- [Tech stack](#tech-stack)
+- [Repository map](#repository-map)
 - [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Environment Configuration](#environment-configuration)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [Database Seeding](#database-seeding)
-- [Code Quality](#code-quality)
+- [Getting started](#getting-started)
+- [Environment configuration](#environment-configuration)
+- [Redirect page](#redirect-page)
+- [API documentation](#api-documentation)
+- [Database seeding](#database-seeding)
+- [Code quality](#code-quality)
+- [Security & privacy](#security--privacy)
+- [Roadmap](#roadmap)
+- [Acknowledgements](#acknowledgements)
+
+---
+
+## Overview
+
+**50cents** is a Flutter app that lets you pay anyone over UPI without ever handling your money, your UPI PIN, or your bank credentials. This repository is the **backend that serves it**.
+
+The service owns everything that happens around the payment, not the payment itself:
+
+- **Identity** — email/password and Google sign-in, issued as stateless JWT sessions.
+- **Ledger** — every payment you initiate in the app is recorded here with its amount, payee, category, and note. Payments made outside the app can be logged manually.
+- **Intelligence** — a keyword-and-LLM hybrid predicts a category from the payee and note.
+- **Lifecycles** — OTP-driven password reset, email change, and account deletion over Gmail SMTP.
+- **Caching** — Redis backs OTPs and rate-sensitive operations.
+- **Redirect** — a self-contained HTML page that catches a UPI link, then bounces the user back into the app they came from.
+
+> **Why a redirect page?** A UPI link opened from a browser, an email, or a QR scan has nowhere to go on its own. The `assets/` page is that landing: it detects the environment, routes to the installed UPI app if it can, and falls back to the store page otherwise — so no intent is ever a dead end.
+
+### Design goals
+
+- **Trust by subtraction** — the backend never sees a PIN, a card, or a balance.
+- **Predictable responses** — one error envelope, one pagination shape, everywhere.
+- **Stateless by default** — JWTs only; no server-side sessions to leak or expire badly.
+- **Boring reliability** — defensive parsing, graceful fallbacks, explicit failure codes.
+
+---
 
 ## Features
 
-- **Authentication & Authorization**
-    - Email/password registration and login
-    - Google OAuth 2.0 integration
-    - OTP-based authentication for secure operations
-    - JWT token-based stateless authentication
-    - Password reset functionality
-    - Role-based access control (Admin/User)
+### Authentication & authorization
 
-- **User Management**
-    - Profile updates
-    - Email change with OTP verification
-    - Account deletion with OTP verification
-    - Password management
+- Email/password registration and login
+- **Google OAuth 2.0** sign-in via a server-issued ID token
+- **OTP-based** flows for password reset, email change, and account deletion
+- **JWT** stateless authentication with role-based access control (Admin / User)
+- Method-level security and password reset with expiring, single-use tokens
 
-- **Payment Records**
-    - Create, read, update, delete payment records
-    - Paginated listing with filters
-    - Payment summary (total income, expenses, net balance)
-    - Custom date range support
+### User management
 
-- **Categories**
-    - List all expense categories
-    - Category prediction based on recipient and note
-    - Admin-only category management
+- Profile read and update
+- Email change with OTP verification
+- Account deletion with OTP verification and immediate session revocation
+- Password management
 
-- **Security**
-    - Spring Security with method-level security
-    - BCrypt password encryption
-    - JWT token validation
-    - CORS configuration
-    - Exception handling with custom filters
+### Payment records
 
-## Tech Stack
+- Create, read, update, and delete payment records
+- Paginated listing with filters and custom date ranges
+- Credit and debit separation
+- Payment summary: total income, total expense, net balance
 
-| Category | Technology | Version |
-|----------|-----------|---------|
-| **Language** | Java | 17 |
-| **Framework** | Spring Boot | 4.1.1 |
-| **Build Tool** | Gradle (Kotlin DSL) | - |
-| **Database** | PostgreSQL | - |
-| **Cache** | Redis | - |
-| **ORM** | Spring Data JPA / Hibernate | - |
-| **Security** | Spring Security | - |
-| **JWT** | JJWT | 0.12.5 |
-| **OAuth** | Google API Client | 2.7.0 |
-| **Email** | Spring Boot Mail | - |
-| **API Docs** | SpringDoc OpenAPI | 3.1.1 |
-| **Code Quality** | Spotless (Google Java Format) | 7.0.2 |
+### Categories
+
+- Full category catalogue with icons
+- **Category prediction** from recipient name and note
+- Admin-only category management
+- Keyword heuristics backed by a Groq LLM fallback
+
+### Platform
+
+- Spring Security with JWT filter chain and CORS configuration
+- BCrypt password hashing
+- Custom exception handling with a consistent error envelope
+- Redis-backed caching for OTPs
+- Interactive Swagger UI and OpenAPI 3 schema
+- Spotless-enforced Google Java Format via a Git pre-commit hook
+
+---
+
+## Tech stack
+
+| Layer | Technology | Version |
+| --- | --- | --- |
+| Language | Java | 17 |
+| Framework | Spring Boot | 4.1.1 |
+| Build tool | Gradle (Kotlin DSL) | 8.x |
+| Database | PostgreSQL | 12+ |
+| Cache | Redis | 6+ |
+| ORM | Spring Data JPA / Hibernate | — |
+| Security | Spring Security + JJWT | 0.12.5 |
+| OAuth | Google API Client | 2.7.0 |
+| Email | Spring Boot Mail (Gmail SMTP) | — |
+| AI | Groq API (category prediction) | — |
+| API docs | SpringDoc OpenAPI | 3.1.1 |
+| Formatting | Spotless · Google Java Format | 7.0.2 |
+| Container | Docker · `.dockerignore` | — |
+
+---
+
+## Repository map
+
+The repository root **is** the Spring Boot project — there is no nested `backend/` directory. Clone it and build from where you land.
+
+```text
+50cents-backend/
+├── src/
+│   └── main/
+│       ├── java/io/app/_cents/backend/
+│       │   ├── auth/                  # Registration, login, Google, OTP, password reset
+│       │   │   ├── controllers/       # REST controllers
+│       │   │   ├── services/          # Business logic
+│       │   │   ├── dtos/              # Data transfer objects
+│       │   │   └── exceptions/        # Custom exceptions
+│       │   ├── users/                 # Profile, email change, account deletion
+│       │   ├── payments/              # Payment records, filters, summaries
+│       │   ├── categories/            # Category catalogue + prediction
+│       │   │   └── services/llm/      # Groq-backed predictor
+│       │   ├── common/                # Shared building blocks
+│       │   │   ├── annotations/       # Custom annotations
+│       │   │   ├── exceptions/        # Global exception handling
+│       │   │   ├── pagination/        # Pagination envelope
+│       │   │   ├── services/          # Email and Redis services
+│       │   │   └── utils/             # OTP, current-user, helpers
+│       │   ├── configs/               # Security, JWT, Redis, Swagger, CORS
+│       │   ├── seeders/               # Seed and seed-down runners
+│       │   └── BackendApplication.java
+│       └── resources/
+│           └── application.yaml       # Spring configuration
+├── assets/
+│   ├── index.html                     # UPI redirect landing page
+│   └── logo.png                       # Brand logo
+├── .githooks/                         # Pre-commit format enforcement
+├── .env.example                       # Environment template
+├── build.gradle.kts                   # Build, seed, seedDown, installGitHooks
+├── settings.gradle.kts
+├── Dockerfile
+├── gradlew / gradlew.bat
+└── README.md
+```
+
+---
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
-
-- **Java Development Kit (JDK)** 17 or higher
-- **Gradle** 8.x (or use the included Gradle wrapper)
-- **PostgreSQL** 12 or higher
-- **Redis** 6 or higher
+- **JDK 17** or newer
+- **Gradle 8.x** — or just use the included `gradlew` wrapper
+- **PostgreSQL 12+**
+- **Redis 6+**
 - **Git**
 
-## Getting Started
+---
 
-### 1. Clone the Repository
+## Getting started
+
+### 1. Clone
 
 ```bash
 git clone https://github.com/SabarishAV/50cents-backend.git
 cd 50cents-backend
 ```
 
-### 2. Configure Environment Variables
-
-Copy the example environment file and configure it:
+### 2. Configure the environment
 
 ```bash
+# macOS / Linux
 cp .env.example .env
+
+# Windows PowerShell
+Copy-Item .env.example .env
 ```
 
-Edit `.env` with your actual configuration values (see [Environment Configuration](#environment-configuration)).
+Fill in the values described in [Environment configuration](#environment-configuration).
 
-### 3. Install Git Hooks
+### 3. Install the Git hook
 
 ```bash
 ./gradlew installGitHooks
 ```
 
-### 4. Build the Project
+This points Git at the committed `.githooks/` directory and runs automatically on every `compileJava`.
+
+### 4. Build
 
 ```bash
 ./gradlew build
 ```
 
-### 5. Run the Application
+### 5. Run
 
 ```bash
 ./gradlew bootRun
 ```
 
-The application will start on `http://localhost:8080`
+The API starts on `http://localhost:8080`, with Swagger UI at `http://localhost:8080/api-docs`.
 
-## Environment Configuration
+---
 
-The application requires the following environment variables to be set in the `.env` file:
+## Environment configuration
 
-### Database Configuration
+The app reads `.env` through `spring.config.import`. Copy `.env.example` and set:
+
+### Database
 
 ```properties
 DB_HOST=localhost
@@ -128,7 +237,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=your_password
 ```
 
-### Redis Configuration
+### Redis
 
 ```properties
 REDIS_HOST=localhost
@@ -137,118 +246,181 @@ REDIS_PASSWORD=
 REDIS_SSL=false
 ```
 
-### JWT Configuration
+### JWT
 
 ```properties
-JWT_SECRET=your-super-secret-jwt-key
+JWT_SECRET=a-long-random-string-at-least-32-chars
 ```
 
-### Google OAuth Configuration
+### Google OAuth
 
 ```properties
 GOOGLE_WEB_CLIENT_ID=your-google-client-id
 ```
 
-Get your Google Client ID from the [Google Cloud Console](https://console.cloud.google.com/).
+Get a client ID from the [Google Cloud Console](https://console.cloud.google.com/).
 
-### Email Configuration (Gmail SMTP)
+### Email (Gmail SMTP)
 
 ```properties
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-specific-password
 ```
 
-Note: For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833) instead of your regular password.
+Use a Gmail [App Password](https://support.google.com/accounts/answer/185833), not your account password.
 
-## Project Structure
+### Groq (category prediction)
 
-```
-50cents-backend/
-├── backend/
-│   └── src/
-│       └── main/
-│           ├── java/io/app/_cents/backend/
-│           │   ├── auth/                    # Authentication module
-│           │   │   ├── controllers/         # REST controllers
-│           │   │   ├── services/            # Business logic
-│           │   │   ├── dtos/                # Data transfer objects
-│           │   │   └── exceptions/          # Custom exceptions
-│           │   ├── users/                   # User management
-│           │   ├── payments/                # Payment records
-│           │   ├── categories/              # Category management
-│           │   ├── common/                  # Shared utilities
-│           │   │   ├── annotations/        # Custom annotations
-│           │   │   ├── exceptions/          # Global exception handling
-│           │   │   ├── pagination/          # Pagination utilities
-│           │   │   ├── services/            # Email, Redis services
-│           │   │   └── utils/               # Utility classes
-│           │   ├── configs/                 # Spring configuration
-│           │   │   ├── jwt/                 # JWT configuration
-│           │   │   └── redis/               # Redis configuration
-│           │   ├── seeders/                 # Database seeders
-│           │   └── BackendApplication.java  # Main application class
-│           └── resources/
-│               ├── application.yaml          # Spring configuration
-│               └── .env                      # Environment variables
-│   ├── .githooks/                           # Git hooks
-│   ├── build.gradle.kts                     # Gradle build configuration
-│   └── settings.gradle.kts                  # Gradle settings
-└── .env.example                             # Environment template
+```properties
+GROQ_API_KEY=your-groq-api-key
 ```
 
-## API Documentation
+Used by the LLM fallback when keyword matching is inconclusive. Prediction degrades to a heuristic default when unset.
 
-The application includes interactive API documentation powered by Swagger/OpenAPI 3.
+---
 
-**Access the Swagger UI:** `http://localhost:8080/api-docs`
+## Redirect page
 
-**Access the OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
+`assets/` contains a single, dependency-free **`index.html`** plus `logo.png`. It is the landing page a user sees when a `upi://pay` link cannot resolve on its own — for example, when it is opened from a browser, an email, or a scanned QR.
 
-### Authentication
+What it does:
 
-Most endpoints require JWT authentication. To authenticate:
+- **Self-contained** — inline CSS, no frameworks, no build step, no external requests.
+- **Brand-consistent** — same neon palette, grid, and glow as the app, built around `logo.png`.
+- **Environment-aware** — switches its accent between a normal state and an error state (red) so failures read instantly.
+- **Two outcomes** — either hands off to an installed UPI app, or shows a friendly store fallback so the user can install the app and retry.
 
-1. Register or login via the Auth endpoints
-2. Copy the JWT token from the response
-3. Include it in the Authorization header: `Bearer <your-jwt-token>`
+Because it ships as a plain static asset, it can be served by the Spring Boot app, by any CDN, or by a static host such as GitHub Pages — the same file works everywhere.
 
-## Database Seeding
+---
 
-The project includes database seeders for development and testing:
+## API documentation
 
-### Seed the Database
+Interactive docs are generated by SpringDoc / OpenAPI 3.
+
+| Resource | URL |
+| --- | --- |
+| Swagger UI | `http://localhost:8080/api-docs` |
+| OpenAPI JSON | `http://localhost:8080/v3/api-docs` |
+
+### Authenticating
+
+1. Register or log in through the Auth endpoints.
+2. Copy the JWT from the response.
+3. Send it on protected calls:
+
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+Swagger UI can store the token for the session (`persist-authorization` is enabled).
+
+### Error contract
+
+Every failure returns the same envelope:
+
+```json
+{
+  "success": false,
+  "statusCode": 400,
+  "code": "VALIDATION_ERROR",
+  "message": "Please check the highlighted fields.",
+  "fields": {
+    "newPassword": "Must be at least 8 characters."
+  },
+  "path": "/auth/password",
+  "timestamp": "2026-11-15T10:00:00Z"
+}
+```
+
+`fields` carries per-field validation messages so clients can render them directly against the form.
+
+---
+
+## Database seeding
+
+### Seed
 
 ```bash
 ./gradlew seed
 ```
 
-This will populate the database with sample categories, users, and payment records.
+Populates categories, sample users, and payment records.
 
-### Clear the Database
+### Reset
 
 ```bash
 ./gradlew seedDown
 ```
 
-This will delete all data from the database.
+Deletes all seeded data. Destructive — use only in development.
 
-## Code Quality
+---
 
-The project uses [Spotless](https://github.com/diffplug/spotless) with Google Java Format for consistent code formatting.
+## Code quality
 
-### Format Code
-
-```bash
-./gradlew spotlessApply
-```
-
-### Check Code Format
+[Spotless](https://github.com/diffplug/spotless) with Google Java Format keeps the codebase consistent. The Git hook installed in step 3 blocks commits that are not formatted.
 
 ```bash
-./gradlew spotlessCheck
+./gradlew spotlessApply    # format the code
+./gradlew spotlessCheck    # fail if anything is unformatted
 ```
 
-## Related Repositories
+---
 
-- **Frontend Repository:** [https://github.com/SabarishAV/50cents](https://github.com/SabarishAV/50cents)
-- **Backend Repository:** [https://github.com/SabarishAV/50cents-backend](https://github.com/SabarishAV/50cents-backend)
+## Security & privacy
+
+50cents is deliberately conservative about what it touches.
+
+| Data | Handling |
+| --- | --- |
+| UPI PIN / bank credentials | Never received, read, or stored. |
+| Money and balances | Never handled — payments execute inside the user's UPI app. |
+| Passwords | BCrypt-hashed; never logged, never returned. |
+| OTPs | Generated with `SecureRandom`, stored in Redis with a short TTL, single-use. |
+| Session | Stateless JWT; validated on every protected request. |
+| Email | Used only for account and security notifications via Gmail SMTP. |
+
+**Responsible disclosure.** If you find a security issue, please contact the maintainer privately instead of opening a public issue.
+
+> UPI is a trademark of the National Payments Corporation of India (NPCI). 50cents is an independent project and is not affiliated with NPCI, any bank, or any UPI application.
+
+---
+
+## Roadmap
+
+- [x] JWT authentication with Google OAuth 2.0
+- [x] OTP-based password reset, email change, and account deletion
+- [x] Payment ledger with filters, summaries, and pagination
+- [x] Category prediction with keyword heuristics + Groq fallback
+- [x] Redirect landing page for unresolved UPI intents
+- [ ] **Who owes whom** — a lightweight ledger for shared and borrowed money: track who I owe and who owes me, settle up, and see running balances per person
+- [ ] Broader automated coverage for auth and ledger flows
+- [ ] Production hardening: rate limiting, observability, and containerised deployment
+- [ ] Full iOS parity validation for Google sign-in and scheme probing
+
+Roadmap items are directional, not commitments.
+
+---
+
+## Acknowledgements
+
+Built with the Spring ecosystem and the following open-source projects:
+
+- [Spring Boot](https://spring.io/projects/spring-boot) · [Spring Security](https://spring.io/projects/spring-security) · [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
+- [PostgreSQL](https://www.postgresql.org) · [Redis](https://redis.io)
+- [JJWT](https://github.com/jwtk/jjwt) · [Google API Client](https://github.com/googleapis/google-api-java-client)
+- [SpringDoc OpenAPI](https://springdoc.org) · [Spotless](https://github.com/diffplug/spotless)
+- [Groq](https://groq.com)
+
+And to the broader UPI ecosystem for a payment standard that makes interoperable handoffs possible.
+
+---
+
+<div align="center">
+
+**Made for the small ones — the chai, the auto ride, the split bill.**
+
+[Report a bug](https://github.com/SabarishAV/50cents-backend/issues) · [View API docs](#api-documentation) · [Client app](https://github.com/SabarishAV/50cents)
+
+</div>

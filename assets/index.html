@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#03070d">
+<meta name="robots" content="noindex">
+<title>50cents</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<style>
+  :root {
+    --bg: #03070d;
+    --ink: #eaf9ff;
+    --muted: #7f9bad;
+    --accent: #1fe4ff;
+    --accent-soft: rgba(31, 228, 255, .16);
+    --grid: rgba(31, 228, 255, .22);
+    --font: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  body[data-view="error"] {
+    --accent: #ff4d78;
+    --accent-soft: rgba(255, 77, 120, .16);
+    --grid: rgba(255, 77, 120, .16);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    transition: --accent .4s;
+  }
+
+  /* Scene: glow + perspective floor, borrowed from the logo's own world */
+  .stage {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(60% 45% at 50% 42%, var(--accent-soft), transparent 70%),
+      radial-gradient(120% 80% at 50% 120%, rgba(31, 228, 255, .06), transparent 60%);
+    transition: background .5s;
+  }
+  .floor {
+    position: absolute; left: -60%; right: -60%; bottom: 0; height: 85vh;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 56px 56px;
+    transform: perspective(380px) rotateX(64deg);
+    transform-origin: 50% 100%;
+    -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 70%);
+            mask-image: linear-gradient(to top, #000 0%, transparent 70%);
+    animation: flow 5s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes flow { to { background-position: 0 56px; } }
+
+  .view { display: none; position: relative; z-index: 1; flex-direction: column; align-items: center; text-align: center; max-width: 340px; width: 100%; }
+  body[data-view="redirect"] .v-redirect,
+  body[data-view="error"] .v-error,
+  body[data-view="done"] .v-done { display: flex; }
+
+  /* Logo + scanner rings */
+  .mark { position: relative; width: 210px; height: 210px; display: grid; place-items: center; margin-bottom: 18px; }
+  .logo {
+    width: 168px; height: 168px; object-fit: cover; border-radius: 50%;
+    mix-blend-mode: screen;
+    -webkit-mask-image: radial-gradient(circle, #000 52%, transparent 71%);
+            mask-image: radial-gradient(circle, #000 52%, transparent 71%);
+    animation: breathe 2.8s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { filter: brightness(.95) drop-shadow(0 0 10px rgba(31,228,255,.35)); }
+    50%      { filter: brightness(1.2) drop-shadow(0 0 26px rgba(31,228,255,.7)); }
+  }
+  .ring { position: absolute; inset: 0; border-radius: 50%; }
+  .ring.slow { border: 1px dashed rgba(31, 228, 255, .35); animation: spin 22s linear infinite reverse; }
+  .ring.fast {
+    inset: 10px;
+    border: 2px solid transparent;
+    border-top-color: var(--accent);
+    border-right-color: rgba(31, 228, 255, .25);
+    filter: drop-shadow(0 0 6px var(--accent));
+    animation: spin 1.3s cubic-bezier(.55, .15, .45, .85) infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  h1 { margin: 0 0 8px; font-size: 24px; font-weight: 650; letter-spacing: -.01em; line-height: 1.2; }
+  .sub { margin: 0; font-size: 15px; line-height: 1.55; color: var(--muted); max-width: 30ch; }
+
+  /* Amount summary */
+  .summary {
+    margin: 26px 0 0; padding: 14px 20px; width: 100%;
+    border: 1px solid rgba(31, 228, 255, .22); border-radius: 14px;
+    background: rgba(8, 20, 32, .55);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    box-shadow: 0 0 40px rgba(31, 228, 255, .08), inset 0 0 24px rgba(31, 228, 255, .04);
+  }
+  .amount { font-size: 34px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(31, 228, 255, .45); }
+  .amount .cur { font-weight: 500; color: var(--accent); margin-right: 2px; }
+  .payee { margin-top: 2px; font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+  .payee b { color: var(--ink); font-weight: 600; }
+  /* No amount in the link: show only the payee */
+  .summary.no-amt .amount { display: none; }
+  .summary.no-amt .payee { margin-top: 0; font-size: 16px; }
+
+  /* Indeterminate progress */
+  .bar { margin-top: 26px; width: 160px; height: 3px; border-radius: 3px; background: rgba(31, 228, 255, .14); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 45%; border-radius: 3px; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: slide 1.1s ease-in-out infinite; }
+  @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(260%); } }
+
+  .secure { margin-top: 18px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+  .secure svg { width: 14px; height: 14px; stroke: var(--accent); }
+
+  /* Error + done states */
+  .badge {
+    width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 24px;
+    border: 2px solid var(--accent); background: var(--accent-soft);
+    box-shadow: 0 0 36px var(--accent-soft), inset 0 0 20px var(--accent-soft);
+    animation: pop .5s cubic-bezier(.2, 1.4, .4, 1) both;
+  }
+  .badge svg { width: 38px; height: 38px; stroke: var(--accent); filter: drop-shadow(0 0 6px var(--accent)); }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .v-error h1 { color: #ffe9ee; }
+  .hint { margin-top: 20px; padding: 12px 16px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; color: var(--muted); background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .07); }
+
+  @media (max-height: 560px) { .mark { width: 150px; height: 150px; } .logo { width: 120px; height: 120px; } .summary { margin-top: 16px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; } }
+</style>
+</head>
+<body data-view="redirect">
+<main class="stage">
+  <div class="floor" aria-hidden="true"></div>
+
+  <section class="view v-redirect" aria-live="polite">
+    <div class="mark" aria-hidden="true">
+      <div class="ring slow"></div>
+      <div class="ring fast"></div>
+      <img class="logo" alt="" src="logo.png">
+    </div>
+    <h1>Opening your UPI app</h1>
+    <p class="sub" id="redirectSub">Hang tight, you'll confirm the payment there.</p>
+    <div class="summary" id="summary">
+      <div class="amount"><span class="cur">₹</span><span id="amt"></span></div>
+      <div class="payee"><span id="toLbl">to</span> <b id="payee"></b></div>
+    </div>
+    <div class="bar" aria-hidden="true"><i></i></div>
+    <div class="secure">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Payment is completed inside your UPI app
+    </div>
+  </section>
+
+  <section class="view v-error" role="alert">
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5"/><path d="M12 17h.01"/><path d="M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+    </div>
+    <h1 id="errTitle">This link can't be used</h1>
+    <p class="sub" id="errMsg"></p>
+    <div class="hint" id="errHint"></div>
+  </section>
+
+  <section class="view v-done" aria-live="polite">
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h1>You're back</h1>
+    <p class="sub">Check your UPI app for the payment status. You can close this tab.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const setView = (v) => { document.body.dataset.view = v; };
+  const TITLE = '50cents';
+
+  const fail = (title, msg, hint) => {
+    $('errTitle').textContent = title;
+    $('errMsg').textContent = msg;
+    $('errHint').textContent = hint;
+    document.title = TITLE;
+    setView('error');
+  };
+
+  const decodeB64Url = (s) => {
+    let b = s.replace(/-/g, '+').replace(/_/g, '/');
+    b += '='.repeat((4 - (b.length % 4)) % 4);
+    const bytes = Uint8Array.from(atob(b), (c) => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes); // keeps ₹, accents, regional scripts intact
+  };
+
+  // Accepts a plain mobile number (9876543210, +91 98765 43210, 09876543210)
+  // or number@handle, and returns a valid UPI address.
+  const normalizePayee = (v) => {
+    const s = String(v || '').replace(/[\s\-()]/g, '');
+    const m = s.match(/^(?:\+?91|0)?([6-9]\d{9})(?:@([A-Za-z][A-Za-z0-9.\-]{1,63}))?$/);
+    return m
+      ? { pa: m[1] + '@' + (m[2] || 'upi'), mobile: m[1], bare: !m[2] }
+      : { pa: s, mobile: '', bare: false };
+  };
+
+  const upiId = /^[\w.\-]{2,256}@[A-Za-z][A-Za-z0-9.\-]{1,63}$/;
+  const isPayee = (v) => upiId.test(normalizePayee(v).pa);
+
+  // Supported link styles:
+  //   ?d=<base64url JSON>          e.g. {"pa":"x@upi","am":"10","pn":"Name","tn":"Note"}
+  //   ?d=9876543210 | ?d=x@upi     plain UPI ID / number, no encoding
+  //   ?9876543210   | ?x@upi       same, without the "d="
+  //   ?pa=x@upi&am=10&pn=..&tn=..  plain params
+  // Returns: object (data) | null (nothing usable given) | undefined (undecodable)
+  const readInput = () => {
+    const q = location.search;
+    const params = new URLSearchParams(q);
+    let raw = null;
+
+    if (params.has('d')) {
+      raw = params.get('d');
+    } else if (params.has('pa')) {
+      return { pa: params.get('pa'), am: params.get('am'), pn: params.get('pn'), tn: params.get('tn'), expiresAt: params.get('expiresAt') };
+    } else if (q.length > 1 && !q.includes('=')) {
+      try { raw = decodeURIComponent(q.slice(1)); } catch (_) { raw = q.slice(1); }
+    }
+
+    raw = (raw || '').trim();
+    if (!raw) return null;
+
+    // Plain UPI ID or mobile number, not encoded
+    if (isPayee(raw)) return { pa: raw };
+
+    // Encoded JSON
+    try {
+      const obj = JSON.parse(decodeB64Url(raw));
+      if (obj && typeof obj === 'object') return obj;
+      if (typeof obj === 'string' || typeof obj === 'number') return { pa: String(obj) };
+    } catch (_) {}
+    return undefined;
+  };
+
+  const data = readInput();
+
+  if (data === null) {
+    return fail('Link is incomplete', 'This link is missing a UPI ID or mobile number.', 'Ask the sender to share the link again.');
+  }
+  if (data === undefined) {
+    return fail('Link is damaged', "We couldn't read the details in this link. It may have been cut short when it was copied.", 'Ask the sender for a fresh link.');
+  }
+
+  const payee = normalizePayee(data.pa);
+  const pa = payee.pa;
+
+  if (!upiId.test(pa)) {
+    return fail('Payment details are invalid', 'The UPI ID or mobile number in this link is missing or incorrect.', 'Ask the sender for a new link.');
+  }
+
+  // Amount is optional. If given, it must be valid.
+  const am = String(data.am == null ? '' : data.am).trim();
+  const hasAmount = am !== '';
+  if (hasAmount && (!/^\d{1,9}(\.\d{1,2})?$/.test(am) || Number(am) <= 0)) {
+    return fail('Payment details are invalid', 'The amount in this link is incorrect.', 'Ask the sender for a new link.');
+  }
+
+  const exp = Number(data.expiresAt);
+  if (data.expiresAt && Number.isFinite(exp) && Date.now() > exp) {
+    return fail('This link has expired', 'Payment links work for a limited time, and this one is past it.', 'Ask the sender for a new link.');
+  }
+
+  // Valid: fill summary, build the UPI intent, redirect
+  const pn = String(data.pn || '').trim().slice(0, 60);
+  const tn = String(data.tn || '').trim().slice(0, 80);
+  const payeeLabel = pn || (payee.bare ? '+91 ' + payee.mobile : pa);
+  $('payee').textContent = payeeLabel;
+
+  if (hasAmount) {
+    $('amt').textContent = Number(am).toLocaleString('en-IN', { minimumFractionDigits: am.includes('.') ? 2 : 0, maximumFractionDigits: 2 });
+  } else {
+    $('summary').classList.add('no-amt');
+    $('toLbl').textContent = 'Pay to';
+    $('redirectSub').textContent = "Hang tight, you'll enter the amount there.";
+  }
+
+  let url = 'upi://pay?pa=' + encodeURIComponent(pa);
+  if (pn) url += '&pn=' + encodeURIComponent(pn);
+  if (hasAmount) url += '&am=' + encodeURIComponent(am);
+  url += '&cu=INR';
+  if (tn) url += '&tn=' + encodeURIComponent(tn);
+
+  let left = false, failTimer;
+  const onLeave = () => { left = true; clearTimeout(failTimer); };
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) onLeave();
+    else if (left) { setView('done'); document.title = TITLE; }
+  });
+  window.addEventListener('pagehide', onLeave);
+  window.addEventListener('pageshow', (e) => { if (e.persisted) { setView('done'); document.title = TITLE; } });
+
+  // Brief moment so the screen never just flashes, then hand off to the UPI app
+  setTimeout(() => {
+    location.href = url;
+    // If the page is still here and focused, no UPI app picked the link up
+    failTimer = setTimeout(() => {
+      if (!left && !document.hidden) {
+        fail('No UPI app found', "We couldn't open a UPI app on this device.", 'Open this link on a phone with GPay, PhonePe, Paytm or any other UPI app installed.');
+      }
+    }, 2800);
+  }, 900);
+})();
+</script>
+</body>
+</html>
