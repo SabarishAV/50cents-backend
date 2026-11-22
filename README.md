@@ -32,6 +32,7 @@ A Spring Boot service that powers the 50cents app: authentication, payments, cat
 - [Redirect page](#redirect-page)
 - [API documentation](#api-documentation)
 - [Database seeding](#database-seeding)
+- [Category auto-seeding](#category-auto-seeding)
 - [Code quality](#code-quality)
 - [Security & privacy](#security--privacy)
 - [Roadmap](#roadmap)
@@ -277,6 +278,19 @@ GROQ_API_KEY=your-groq-api-key
 
 Used by the LLM fallback when keyword matching is inconclusive. Prediction degrades to a heuristic default when unset.
 
+### Category auto-seeding (production)
+
+```properties
+ENV=production
+```
+
+Set `ENV=production` in your `.env` file to enable **automatic category seeding on application startup** in production environments. The seeder checks the database and inserts only missing categories (idempotent).
+
+Alternatively, use the `seed` profile for development:
+```properties
+spring.profiles.active=seed
+```
+
 ---
 
 ## Redirect page
@@ -354,6 +368,65 @@ Populates categories, sample users, and payment records.
 ```
 
 Deletes all seeded data. Destructive — use only in development.
+
+---
+
+## Category auto-seeding
+
+The application automatically seeds the category catalogue on startup when **either** of these conditions is met:
+
+| Trigger | How to activate |
+| --- | --- |
+| **`seed` profile** | `--spring.profiles.active=seed` (or `spring.profiles.active=seed` in config) |
+| **`ENV=production`** | Environment variable `ENV=production` (via `.env` or deployment config) |
+
+### Behavior
+
+- Runs as a `CommandLineRunner` at startup (`@Order(2)`)
+- Queries existing categories by `code`
+- Inserts only the missing ones (idempotent — safe to run repeatedly)
+- Logs: `Seeded X new categories (Y already existed)`
+
+
+### Production deployment (Docker)
+
+The app reads environment variables from `.env` via `spring.config.import`. Add `ENV=production` to your `.env` file:
+
+```properties
+# .env
+ENV=production
+DB_HOST=your-db-host
+DB_PORT=5432
+DB_NAME=50cents
+DB_USERNAME=postgres
+DB_PASSWORD=your-password
+# ... other variables
+```
+
+Build and run:
+
+```bash
+docker build -t 50cents-backend .
+docker run --env-file .env -p 8080:8080 50cents-backend
+```
+
+With **docker-compose**, the `.env` file is loaded automatically:
+
+```yaml
+# docker-compose.yml
+services:
+  backend:
+    build: .
+    env_file: .env
+    ports:
+      - "8080:8080"
+```
+
+```bash
+docker-compose up -d
+```
+
+The `ENV=production` flag triggers automatic category seeding on container startup.
 
 ---
 

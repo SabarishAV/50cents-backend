@@ -57,3 +57,5 @@ springdoc:
   swagger-ui:
     path: /api-docs
     persist-authorization: true
+
+env : ${ENV}

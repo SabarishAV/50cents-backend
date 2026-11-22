@@ -1,5 +1,6 @@
 package io.app._cents.backend.seeders;
 
+import io.app._cents.backend.seeders.category.CategorySeeder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

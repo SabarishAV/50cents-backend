@@ -1,4 +1,4 @@
-package io.app._cents.backend.seeders;
+package io.app._cents.backend.seeders.category;
 
 import io.app._cents.backend.categories.CategoriesRepository;
 import io.app._cents.backend.categories.models.Category;
@@ -8,12 +8,12 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("seed")
+@Conditional(CategorySeedingCondition.class)
 @Order(2)
 public class CategorySeeder implements CommandLineRunner {
 
